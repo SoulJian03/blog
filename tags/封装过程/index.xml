@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>封装过程 on SoulJian小站</title><link>https://souljian.cn/tags/%E5%B0%81%E8%A3%85%E8%BF%87%E7%A8%8B/</link><description>Recent content in 封装过程 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 21 Apr 2025 21:52:15 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E5%B0%81%E8%A3%85%E8%BF%87%E7%A8%8B/index.xml" rel="self" type="application/rss+xml"/><item><title>数据包封装过程</title><link>https://souljian.cn/p/745243535/</link><pubDate>Mon, 21 Apr 2025 21:52:15 +0800</pubDate><guid>https://souljian.cn/p/745243535/</guid><description>&lt;p>我们以 &lt;strong>10网段私有IP地址&lt;/strong> 为例（比如你家/公司内网），重新还原整个过程，重点标注源IP和目的IP：&lt;/p>
+&lt;hr>
+&lt;h3 id="-快递运输过程10网段ip版">📦 &lt;strong>快递运输过程（10网段IP版）&lt;/strong>
+&lt;/h3>&lt;p>假设你的电脑IP是 &lt;code>10.0.0.2&lt;/code>，要访问公司内网的服务器IP &lt;code>10.20.1.100&lt;/code>，流程如下：&lt;/p>
+&lt;h4 id="1-应用层对话">&lt;strong>1. 应用层（对话）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>你的浏览器（Chrome）&lt;/strong>
+• 源IP：&lt;code>10.0.0.2&lt;/code>（你的电脑）
+• 目的IP：&lt;code>10.20.1.100&lt;/code>（公司服务器）
+• 请求内容：&amp;ldquo;请给我首页HTML文件&amp;rdquo;（写在快递单上的文字）&lt;/p>
+&lt;h4 id="2-运输层拆包贴标签">&lt;strong>2. 运输层（拆包+贴标签）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>TCP协议处理&lt;/strong>
+• 源端口：随机生成（比如&lt;code>54321&lt;/code>，你的浏览器门牌号）
+• 目的端口：&lt;code>80&lt;/code>（默认HTTP服务的门牌号）
+• 动作：把&amp;quot;首页请求&amp;quot;拆成多个小包裹，每个包裹标注顺序号（类似快递箱编号1/3、2/3、3/3）&lt;/p>
+&lt;h4 id="3-网络层找路">&lt;strong>3. 网络层（找路）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>路由器N1（你的网关）&lt;/strong>
+• 源IP：&lt;code>10.0.0.2&lt;/code>
+• 目的IP：&lt;code>10.20.1.100&lt;/code>
+• 查路由表：&amp;ldquo;去往&lt;code>10.20.0.0/16&lt;/code>网段，下一跳是路由器N2（IP &lt;code>10.0.0.1&lt;/code>）&amp;rdquo;
+• 类似快递分拣员：&amp;ldquo;这个包裹是10.20网段的，走3号通道到N2！&amp;rdquo;&lt;/p>
+&lt;h4 id="4-数据链路层卡车运输">&lt;strong>4. 数据链路层（卡车运输）&lt;/strong>
+&lt;/h4>&lt;p>• &lt;strong>从电脑到路由器N1&lt;/strong>
+• 源MAC地址：&lt;code>AA:BB:CC:DD:EE:01&lt;/code>（你的电脑网卡）
+• 目的MAC地址：&lt;code>AA:BB:CC:DD:EE:02&lt;/code>（路由器N1的接口）
+• 动作：通过网线/WiFi传输（卡车运输）&lt;/p>
+&lt;h4 id="5-物理层信号传输">&lt;strong>5. 物理层（信号传输）&lt;/strong>
+&lt;/h4>&lt;p>• 网线中的电信号或WiFi的无线电波，把二进制数据流（&lt;code>01101000...&lt;/code>）从电脑传到路由器N1。&lt;/p>
+&lt;hr>
+&lt;h3 id="-完整路径含ip">🌐 &lt;strong>完整路径（含IP）&lt;/strong>
+&lt;/h3>&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="cl">你的电脑 (10.0.0.2) → 路由器N1 → 路由器N2 → 公司服务器 (10.20.1.100)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;ol>
+&lt;li>&lt;strong>应用层&lt;/strong>：浏览器发起请求 → 服务器返回网页&lt;/li>
+&lt;li>&lt;strong>运输层&lt;/strong>：TCP通过端口（源端口）&lt;code>54321→80&lt;/code>（目标端口）保证数据顺序&lt;/li>
+&lt;li>&lt;strong>网络层&lt;/strong>：IP地址（源IP）&lt;code>10.0.0.2→10.20.1.100&lt;/code>（目标IP）指引方向&lt;/li>
+&lt;li>&lt;strong>数据链路层&lt;/strong>：MAC地址逐段接力传输（每经过一个路由器，源/目的MAC都会改变）&lt;/li>
+&lt;li>&lt;strong>物理层&lt;/strong>：网线/WiFi承载光/电信号&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="-关键点">💡 &lt;strong>关键点&lt;/strong>
+&lt;/h3>&lt;ol>
+&lt;li>&lt;strong>IP地址的作用&lt;/strong>：
+• 类似快递收件地址，网络层靠IP地址决定包裹往哪送
+• &lt;code>10.x.x.x&lt;/code>是私有IP（类似公司内部房间号），仅在局域网内使用&lt;/li>
+&lt;li>&lt;strong>MAC地址的作用&lt;/strong>：
+• 类似卡车车牌号，数据链路层靠MAC地址完成&amp;quot;最后一公里&amp;quot;配送
+• 每经过一个路由器（N1→N2），MAC地址都会更新，但IP地址始终不变&lt;/li>
+&lt;li>&lt;strong>为什么用10网段？&lt;/strong>
+• 私有IP地址（10.0.0.0~10.255.255.255）专用于内网
+• 避免和公网IP冲突，适合企业/家庭内部通信&lt;/li>
+&lt;/ol></description></item></channel></rss>
