@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>反序列化 on SoulJian小站</title><link>https://souljian.cn/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/</link><description>Recent content in 反序列化 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 10:20:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/index.xml" rel="self" type="application/rss+xml"/><item><title>反序列化原理与风险</title><link>https://souljian.cn/p/751088030/</link><pubDate>Sat, 29 Aug 2026 10:20:00 +0800</pubDate><guid>https://souljian.cn/p/751088030/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;本文讲解反序列化漏洞的原理与防御。不要对真实系统构造恶意序列化数据。所有验证只能在自建靶场或明确授权的测试环境中进行。&lt;/p&gt;
+&lt;h2 id="一序列化是干什么的"&gt;一、序列化是干什么的
+&lt;/h2&gt;&lt;p&gt;程序里的对象只存在于内存中，离开进程就没法保存或传输。序列化就是把对象转成字节或字符串，反序列化就是把它们变回对象。&lt;/p&gt;
+&lt;p&gt;典型用途：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;把对象存进数据库、缓存
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;对象在网络间传递
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;前后端交换复杂数据
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;序列化本身不是坏事，问题出在&lt;strong&gt;反序列化时是否信任了来源&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id="二为什么反序列化会危险"&gt;二、为什么反序列化会危险
+&lt;/h2&gt;&lt;p&gt;反序列化不是简单“读回数据”，很多语言在反序列化时会执行类构造、魔术方法甚至任意类方法。&lt;/p&gt;
+&lt;p&gt;如果攻击者能控制反序列化的内容，就可能：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;触发危险方法链
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;读写任意文件
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;执行系统命令
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;造成 RCE
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;常见的危险场景集中在：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Java 的 readObject / ysoserial 链
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Python 的 pickle
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;PHP 的 unserialize + 魔术方法
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Ruby 的 Marshal.load
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;一句关键的话：&lt;strong&gt;反序列化等于在“加载代码路径”，不是加载数据&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id="三哪些入口最容易被利用"&gt;三、哪些入口最容易被利用
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;接收序列化数据的接口
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;加密 Cookie 里存了对象
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;消息队列、缓存里传对象
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;日志或报告功能解析对象
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;尤其要注意：某些系统把对象序列化后 Base64 放进 Cookie，如果密钥泄露或逻辑校验缺失，等于把“执行入口”交给攻击者。&lt;/p&gt;
+&lt;h2 id="四防御思路"&gt;四、防御思路
+&lt;/h2&gt;&lt;h3 id="1-别反序列化不可信数据"&gt;1. 别反序列化不可信数据
+&lt;/h3&gt;&lt;p&gt;能用 JSON、纯数据格式就用它们，能少用原生反序列化就少用。&lt;/p&gt;
+&lt;h3 id="2-校验与签名"&gt;2. 校验与签名
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;对序列化内容加签名/HMAC
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;校验版本和类型白名单
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;拒绝未知类
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="3-白名单类过滤"&gt;3. 白名单类过滤
+&lt;/h3&gt;&lt;p&gt;明确允许哪些类可以反序列化，而不是黑名单。黑名单永远追不上新 gadget。&lt;/p&gt;
+&lt;h3 id="4-隔离与最小权限"&gt;4. 隔离与最小权限
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;反序列化进程用最小权限运行
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;沙箱或独立环境解析
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;限制文件系统、网络访问
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="5-审计"&gt;5. 审计
+&lt;/h3&gt;&lt;p&gt;关注异常反序列化请求、非常规类名、异常异常栈。&lt;/p&gt;
+&lt;h2 id="五报告中的正确写法"&gt;五、报告中的正确写法
+&lt;/h2&gt;&lt;p&gt;示例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;发现：Cookie 中存放 Base64 编码的序列化对象，反序列化未做类白名单校验，存在可利用链。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;风险：攻击者可能构造恶意对象导致命令执行。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;建议：改用不可执行数据格式；对数据加签名；反序列化做类白名单；以最小权限运行。
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;报告要写清“入口、是否可验证、影响、修复优先级”，而不是只写“存在反序列化风险”。&lt;/p&gt;
+&lt;h2 id="六小结"&gt;六、小结
+&lt;/h2&gt;&lt;p&gt;反序列化的本质是“加载代码路径”。它比参数注入更危险，因为它能绕过很多输入校验。把“反序列化 = 执行入口”记在心里，才会谨慎对待每一个序列化来源。&lt;/p&gt;</description></item></channel></rss>

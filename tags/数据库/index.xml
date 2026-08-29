@@ -1,4 +1,111 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>数据库 on SoulJian小站</title><link>https://souljian.cn/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</link><description>Recent content in 数据库 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 04:35:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" rel="self" type="application/rss+xml"/><item><title>SQL 注入原理与防御</title><link>https://souljian.cn/p/751088006/</link><pubDate>Sat, 29 Aug 2026 04:35:00 +0800</pubDate><guid>https://souljian.cn/p/751088006/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>数据库 on SoulJian小站</title><link>https://souljian.cn/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/</link><description>Recent content in 数据库 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 10:40:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E6%95%B0%E6%8D%AE%E5%BA%93/index.xml" rel="self" type="application/rss+xml"/><item><title>MySQL 事务与隔离级别入门</title><link>https://souljian.cn/p/751088032/</link><pubDate>Sat, 29 Aug 2026 10:40:00 +0800</pubDate><guid>https://souljian.cn/p/751088032/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;本文讲解数据库事务原理。相关测试请在自建环境完成，不要对生产数据库执行锁表、大事务或回滚操作。&lt;/p&gt;
+&lt;h2 id="一什么是事务"&gt;一、什么是事务
+&lt;/h2&gt;&lt;p&gt;事务是把一组数据库操作打包成一个原子单元：要么全部成功，要么全部回滚。&lt;/p&gt;
+&lt;p&gt;典型场景：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;转账：扣款 + 加款
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;下单：减库存 + 建订单
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;注册：插用户 + 初始化配置
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;一个事务里如果有一步失败，前面的操作都要能回滚，不能留下“只扣了钱没加钱”的半成品状态。&lt;/p&gt;
+&lt;h2 id="二acid-是什么"&gt;二、ACID 是什么
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;A（原子性）：要么全做，要么全不做
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;C（一致性）：执行前后数据状态都符合约束
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;I（隔离性）：并发事务之间互相隔离
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;D（持久性）：提交后数据不丢
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;初学者最容易忽略的是 I（隔离性）：多个事务同时跑的时候，怎么保证彼此看不到中间态。&lt;/p&gt;
+&lt;h2 id="三并发会带来哪些问题"&gt;三、并发会带来哪些问题
+&lt;/h2&gt;&lt;h3 id="1-脏读"&gt;1. 脏读
+&lt;/h3&gt;&lt;p&gt;事务 A 修改了数据但还没提交，事务 B 读到了这个未提交的值。A 一旦回滚，B 读到的是“不存在的数据”。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;B 读到了 A 未提交的修改 → 脏读
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="2-不可重复读"&gt;2. 不可重复读
+&lt;/h3&gt;&lt;p&gt;同一个事务里，两次读同一行，结果不一样。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;事务内第一次读到 v1
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;期间别的事务提交了修改
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;事务内第二次读到 v2
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="3-幻读"&gt;3. 幻读
+&lt;/h3&gt;&lt;p&gt;同一个事务里，两次查询同一范围，多出来（或消失）了行。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第一次查，符合条件有 2 行
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;别的事务插入了一行并提交
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第二次查，变成 3 行
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="四mysql-的隔离级别"&gt;四、MySQL 的隔离级别
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;READ UNCOMMITTED：可以读未提交 → 可能脏读
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;READ COMMITTED：只能读已提交 → 避免脏读，仍可能不可重复读
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;REPEATABLE READ：事务内读结果一致 → 避免不可重复读（MySQL 默认）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SERIALIZABLE：完全串行 → 最强隔离，性能最低
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;InnoDB 默认是 &lt;code&gt;REPEATABLE READ&lt;/code&gt;，配合 MVCC 能解决大部分不可重复读问题，但幻读仍可能出现在特定范围查询中。&lt;/p&gt;
+&lt;h2 id="五防御与使用建议"&gt;五、防御与使用建议
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;事务尽量短，减少锁持有时间
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;按需选择隔离级别，不无脑 SERIALIZABLE
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;大事务拆小，避免长时间锁表
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;关键数据加唯一约束兜底
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;对慢事务、长事务做监控
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="六小结"&gt;六、小结
+&lt;/h2&gt;&lt;p&gt;事务不是“用了就安全”，隔离级别决定了并发下的可见性。理解脏读、不可重复读、幻读三种异常和 MySQL 的隔离级别，才能解释为什么有时会读到“奇怪”的数据。&lt;/p&gt;</description></item><item><title>SQL 注入原理与防御</title><link>https://souljian.cn/p/751088006/</link><pubDate>Sat, 29 Aug 2026 04:35:00 +0800</pubDate><guid>https://souljian.cn/p/751088006/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;本文讲解 SQL 注入的原理与防御。所有示例都用于理解漏洞形成过程，不代表你可以对真实网站、数据库或企业系统实施攻击。漏洞验证必须在自建靶场、公司授权测试环境或明确书面授权的目标上完成。未经授权访问、篡改、读取数据库数据可能触犯《网络安全法》《数据安全法》《个人信息保护法》和《刑法》相关规定。&lt;/p&gt;
 &lt;h2 id="一为什么-sql-注入一直是高频漏洞"&gt;一、为什么 SQL 注入一直是高频漏洞
 &lt;/h2&gt;&lt;p&gt;SQL 注入的本质是：程序把用户输入拼接到 SQL 语句里，数据库把这段输入当成 SQL 代码执行了。&lt;/p&gt;

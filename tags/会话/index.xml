@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>会话 on SoulJian小站</title><link>https://souljian.cn/tags/%E4%BC%9A%E8%AF%9D/</link><description>Recent content in 会话 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 10:00:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E4%BC%9A%E8%AF%9D/index.xml" rel="self" type="application/rss+xml"/><item><title>Cookie 与 Session 入门</title><link>https://souljian.cn/p/751088028/</link><pubDate>Sat, 29 Aug 2026 10:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088028/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;本文讲解会话机制的原理与防御。不要拿真实网站、企业系统去测试会话固定、会话劫持或伪造 Cookie。所有验证必须在自建靶场或明确授权的测试环境中完成。&lt;/p&gt;
+&lt;h2 id="一为什么-http-需要会话"&gt;一、为什么 HTTP 需要“会话”
+&lt;/h2&gt;&lt;p&gt;HTTP 本身是无状态的，每次请求都是独立的。服务器收到两次请求，默认不知道是不是同一个人。&lt;/p&gt;
+&lt;p&gt;但真实业务需要“记住登录状态”，所以出现了会话机制。常见分工是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Cookie：浏览器保存的小片段，随请求自动携带
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Session：服务端保存的状态，客户端只拿一个标识
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;理解这两者，才能看懂“登出无效”“换个浏览器又要登录”“会话被劫持”这些问题。&lt;/p&gt;
+&lt;h2 id="二cookie-是什么"&gt;二、Cookie 是什么
+&lt;/h2&gt;&lt;p&gt;Cookie 是服务器通过 &lt;code&gt;Set-Cookie&lt;/code&gt; 下发给浏览器的小数据块，浏览器之后会在同域请求里带上它。&lt;/p&gt;
+&lt;p&gt;一次典型交互：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;服务器：Set-Cookie: sessionid=abc123; Path=/; HttpOnly; Secure; SameSite=Lax
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;浏览器：Cookie: sessionid=abc123
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Cookie 上常见的属性直接决定安全边界：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Domain / Path：哪些地址会带这个 Cookie
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;HttpOnly：禁止 JS 读取，防 XSS 直接偷走
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Secure：仅 HTTPS 下传输
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SameSite：控制跨站请求是否携带
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Expires / Max-Age：有效期
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;如果 Cookie 里直接放了用户名、角色甚至明文密码，那就是把信任交给了客户端，风险很大。&lt;/p&gt;
+&lt;h2 id="三session-是什么"&gt;三、Session 是什么
+&lt;/h2&gt;&lt;p&gt;Session 通常放在服务端内存、Redis 或数据库里。客户端只持有 session id，服务端拿这个 id 去查状态。&lt;/p&gt;
+&lt;p&gt;典型流程：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;登录成功
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;服务端创建会话，生成 session id
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Set-Cookie 返回给客户端
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;后续请求带 session id，服务端校验
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这里最关键的一句话：&lt;strong&gt;Session 内容在服务端，客户端只有一把钥匙&lt;/strong&gt;。如果把用户身份放在客户端 Cookie 里自己拼，等于把门锁交给了别人。&lt;/p&gt;
+&lt;h2 id="四常见风险"&gt;四、常见风险
+&lt;/h2&gt;&lt;h3 id="1-会话固定"&gt;1. 会话固定
+&lt;/h3&gt;&lt;p&gt;登录前和登录后 session id 没变。攻击者可以先给自己发一个 session id，诱导用户用它登录，登录后攻击者复用同一个 id。&lt;/p&gt;
+&lt;p&gt;防御重点是：&lt;strong&gt;登录成功后必须重新生成 session id&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id="2-会话劫持"&gt;2. 会话劫持
+&lt;/h3&gt;&lt;p&gt;session id 被偷，攻击者就能冒充用户。偷取途径包括：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;XSS 偷 Cookie（没 HttpOnly）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;HTTP 明文传输（没 Secure）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;日志、Referer、第三方脚本泄露
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id="3-会话过期管理不当"&gt;3. 会话过期管理不当
+&lt;/h3&gt;&lt;p&gt;会话永远不过期、宽限期过长、登出只清前端不清理服务端，都会放大风险。&lt;/p&gt;
+&lt;h3 id="4-并发登录与暴力破解"&gt;4. 并发登录与暴力破解
+&lt;/h3&gt;&lt;p&gt;没有限制单账号登录会话数量、没有失败次数限制，容易被撞库或滥用。&lt;/p&gt;
+&lt;h2 id="五防御建议"&gt;五、防御建议
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;登录成功后轮换 session id
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Cookie 加 HttpOnly、Secure、SameSite=Lax/Strict
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;设置合理过期时间并支持服务端失效
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;敏感操作要求二次认证
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;限制异常登录和会话复用
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;敏感 Cookie 用独立隔离（如同源策略 + 独立域名）
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="六报告中的正确写法"&gt;六、报告中的正确写法
+&lt;/h2&gt;&lt;p&gt;示例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;发现：登录成功后 session id 未重新生成，Cookie 未设置 HttpOnly 且站点允许 HTTP 访问。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;风险：可能被会话固定、XSS 窃取会话导致冒充登录态。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;建议：登录后重新生成 session id；Cookie 增加 HttpOnly、Secure、SameSite；强制 HTTPS。
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;写报告时要把“怎么验证的、影响面、修复建议”说清楚，而不是只写“会话不安全”。&lt;/p&gt;
+&lt;h2 id="七小结"&gt;七、小结
+&lt;/h2&gt;&lt;p&gt;Cookie 只是标识，Session 才是状态。真正要保护的是服务端会话，而不是客户端那张“钥匙”。把这两者分开理解，会话固定、劫持、过期这些问题就有了统一的解释。&lt;/p&gt;</description></item></channel></rss>
