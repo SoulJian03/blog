@@ -1225,6 +1225,25 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;建议：修复上传漏洞；限制目录执行；增强日志告警。
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="应急处置操作步骤"&gt;应急处置操作步骤
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 1 步：确认事件并判断类型
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 2 步：先内存取证、再磁盘快照（见取证篇）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 3 步：隔离主机（断外网/禁网卡/安全组）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 4 步：按类型排查（账号/进程/文件/启动项/日志）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 5 步：清理加固并复测
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;第 6 步：写报告与溯源
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="六小结"&gt;六、小结
 &lt;/h2&gt;&lt;p&gt;应急响应不是单点操作，而是按时间线恢复安全边界。最重要的是：先止血，再取证，再恢复，再复盘。&lt;/p&gt;</description></item><item><title>Linux 系统加固清单</title><link>https://souljian.cn/p/751088016/</link><pubDate>Sat, 29 Aug 2026 06:15:00 +0800</pubDate><guid>https://souljian.cn/p/751088016/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;本文只讨论在授权范围内加固自己管理或测试的系统。请不要在他人服务器上修改配置、关闭服务或尝试提权。所有操作都应以授权、可回滚和审计为前提。&lt;/p&gt;
@@ -4605,7 +4624,32 @@ data-flex-basis="318px"
 &lt;/div&gt;&lt;ul&gt;
 &lt;li&gt;将捕获的数据包保存到&lt;code&gt;capture.pcap&lt;/code&gt;文件中，后续可以使用Wireshark等工具进行详细分析。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id="七注意事项"&gt;七、注意事项
+&lt;h2 id="抓包操作步骤"&gt;抓包操作步骤
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;span class="lnt"&gt;7
+&lt;/span&gt;&lt;span class="lnt"&gt;8
+&lt;/span&gt;&lt;span class="lnt"&gt;9
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 第 1 步：确认接口&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ip a
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 第 2 步：抓指定端口并保存&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo tcpdump -i eth0 -nn -w cap.pcap port &lt;span class="m"&gt;80&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 第 3 步：读包并过滤&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo tcpdump -r cap.pcap -n
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 第 4 步：只看内容/主机&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;sudo tcpdump -r cap.pcap -nn -X &lt;span class="p"&gt;|&lt;/span&gt; grep -iE &lt;span class="s1"&gt;&amp;#39;GET|POST|Host&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;&lt;span class="c1"&gt;# 第 5 步：配合 Wireshark 打开分析&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="七注意事项"&gt;七、注意事项
 &lt;/h2&gt;&lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;权限问题&lt;/strong&gt;：TCPdump 需要管理员权限才能运行。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;性能影响&lt;/strong&gt;：在高流量的网络环境中，TCPdump 可能会对系统性能产生一定影响。&lt;/li&gt;
