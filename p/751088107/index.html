@@ -25,6 +25,10 @@
 </span></span><span class=line><span class=cl>filetype:sql|bak    指定文件类型（备份/源码）
 </span></span><span class=line><span class=cl>intext:password      页面正文含 password
 </span></span><span class=line><span class=cl>-关键词              排除某个词
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>解释：site 限定域；inurl/intitle 限定位置；filetype 挖文件；
+</span></span><span class=line><span class=cl>组合使用可精准定位隐藏后台、备份、接口等。
 </span></span></code></pre></td></tr></table></div></div><h3 id=实战组合>实战组合</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
 </span><span class=lnt> 2
 </span><span class=lnt> 3
@@ -63,22 +67,30 @@
 </span></span><span class=line><span class=cl>第 2 步：按“后台/备份/接口/文档”逐类组合搜索
 </span></span><span class=line><span class=cl>第 3 步：对命中结果用工具验证可达与敏感度
 </span></span><span class=line><span class=cl>第 4 步：参考 GHDB（Google Hacking Database）扩展
-</span></span></code></pre></td></tr></table></div></div><h2 id=三js-分析从前端挖接口与密钥>三、JS 分析：从前端挖接口与密钥</h2><p>前端 JS 里常藏着后端接口地址、AppID/Secret、加密密钥和业务逻辑，是“拿源码找接口”的最快路径。</p><h3 id=方法与工具>方法与工具</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
+</span></span></code></pre></td></tr></table></div></div><h2 id=三js-分析从前端挖接口与密钥>三、JS 分析：从前端挖接口与密钥</h2><p>前端 JS 里常藏着后端接口地址、AppID/Secret、加密密钥和业务逻辑，是“拿源码找接口”的最快路径。</p><h3 id=方法与工具>方法与工具</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 抓页面引用的 JS 文件（Burp/浏览器）</span>
 </span></span><span class=line><span class=cl><span class=c1># 批量提取 JS 里的 URL/接口</span>
 </span></span><span class=line><span class=cl>LinkFinder -i https://目标/app.js -d -o urls.txt
+</span></span><span class=line><span class=cl><span class=c1># 解释：从 JS 中提取接口 URL，-d 深度抓取</span>
 </span></span><span class=line><span class=cl>JSFinder -u https://目标 -d
+</span></span><span class=line><span class=cl><span class=c1># 解释：自动抓页面并提取 JS 中的域名/接口</span>
 </span></span><span class=line><span class=cl><span class=c1># 提取密钥/敏感字符串</span>
 </span></span><span class=line><span class=cl>SecretFinder -i https://目标/app.js -o secrets.txt
+</span></span><span class=line><span class=cl><span class=c1># 解释：用正则找 token/secret/api key 等敏感串</span>
 </span></span><span class=line><span class=cl><span class=c1># 关键词直接抓</span>
 </span></span><span class=line><span class=cl>grep -oE <span class=s1>&#39;https?://[^&#34;]+&#39;</span> app.js <span class=p>|</span> sort -u
+</span></span><span class=line><span class=cl><span class=c1># 解释：直接把 JS 里所有 URL 拉出来去重</span>
 </span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>重点找：/api/、/v1/、/admin/、token、secret、appid、
@@ -123,6 +135,10 @@
 </span></span><span class=line><span class=cl>  http.title:&#34;admin&#34;
 </span></span><span class=line><span class=cl>  port:6379                           找未授权 Redis
 </span></span><span class=line><span class=cl>  ssl.cert.subject.cn:example.com     按证书
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>解释：测绘语法=按域/组件/标题/图标定位资产；
+</span></span><span class=line><span class=cl>icon_hash/证书能跨 IP 找到同一套系统，适合测绘同款资产。
 </span></span></code></pre></td></tr></table></div></div><h3 id=找云存储桶osss3>找云存储桶（OSS/S3）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
