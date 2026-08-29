@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>口令爆破 on SoulJian小站</title><link>https://souljian.cn/tags/%E5%8F%A3%E4%BB%A4%E7%88%86%E7%A0%B4/</link><description>Recent content in 口令爆破 on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 05:35:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/%E5%8F%A3%E4%BB%A4%E7%88%86%E7%A0%B4/index.xml" rel="self" type="application/rss+xml"/><item><title>弱口令爆破：hydra 实战与防御</title><link>https://souljian.cn/p/751088012/</link><pubDate>Sat, 29 Aug 2026 05:35:00 +0800</pubDate><guid>https://souljian.cn/p/751088012/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;弱口令爆破是高风险行为。本文只讲原理和防御，所有示例命令只适合在自建靶场或明确授权的目标上使用。未经授权对他人账号进行爆破、尝试登录、撞库或字典测试，都可能触犯法律并造成事故。&lt;/p&gt;
+&lt;h2 id="一为什么弱口令仍然是高频风险"&gt;一、为什么弱口令仍然是高频风险
+&lt;/h2&gt;&lt;p&gt;很多系统即使没有代码漏洞，也可能因为弱口令被攻破。常见原因：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;span class="lnt"&gt;5
+&lt;/span&gt;&lt;span class="lnt"&gt;6
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;默认口令未修改
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;常见单词加简单后缀
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;密码复用
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;没有登录失败限制
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;没有 MFA
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;没有账户锁定
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="二hydra-的作用"&gt;二、hydra 的作用
+&lt;/h2&gt;&lt;p&gt;hydra 是一个支持多种协议的离线/在线口令爆破工具。它可以针对 SSH、HTTP、FTP、Telnet 等服务进行密码尝试。&lt;/p&gt;
+&lt;p&gt;它适合学习的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;哪些目标最容易弱口令
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;如何配置速率
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;如何记录结果
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;如何从防御侧阻断爆破
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="三常见命令形式"&gt;三、常见命令形式
+&lt;/h2&gt;&lt;h3 id="1-ssh-爆破"&gt;1. SSH 爆破
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;hydra -L users.txt -P passwords.txt ssh://127.0.0.1 -t &lt;span class="m"&gt;4&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;code&gt;-L&lt;/code&gt; 指定用户名文件，&lt;code&gt;-P&lt;/code&gt; 指定密码文件，&lt;code&gt;-t&lt;/code&gt; 指定并发线程。&lt;/p&gt;
+&lt;h3 id="2-http-表单爆破"&gt;2. HTTP 表单爆破
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;hydra -L users.txt -P passwords.txt http-post-form &lt;span class="s2"&gt;&amp;#34;//127.0.0.1/login:username=^USER^&amp;amp;password=^PASS^:F=Invalid&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;不同网站的登录失败特征不同，需要根据目标响应调整判断条件。&lt;/p&gt;
+&lt;h2 id="四为什么不要滥用-hydra"&gt;四、为什么不要滥用 hydra
+&lt;/h2&gt;&lt;p&gt;暴力测试会造成明显异常流量：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;大量 401/403
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;大量失败登录
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;短时间高频请求
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;触发 WAF、防火墙或风控
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;这也意味着，只要系统有日志和告警，爆破很容易被发现。&lt;/p&gt;
+&lt;h2 id="五防御建议"&gt;五、防御建议
+&lt;/h2&gt;&lt;h3 id="1-强密码策略"&gt;1. 强密码策略
+&lt;/h3&gt;&lt;p&gt;要求足够的长度和复杂度，禁止默认密码。&lt;/p&gt;
+&lt;h3 id="2-账户锁定与限速"&gt;2. 账户锁定与限速
+&lt;/h3&gt;&lt;p&gt;失败达到阈值后锁定账号或延迟响应。&lt;/p&gt;
+&lt;h3 id="3-多因素认证"&gt;3. 多因素认证
+&lt;/h3&gt;&lt;p&gt;对管理员和高风险入口启用 MFA。&lt;/p&gt;
+&lt;h3 id="4-ip-限制"&gt;4. IP 限制
+&lt;/h3&gt;&lt;p&gt;只允许可信来源访问登录入口。&lt;/p&gt;
+&lt;h3 id="5-日志与告警"&gt;5. 日志与告警
+&lt;/h3&gt;&lt;p&gt;监控异常失败登录、异地登录和短时间大量请求。&lt;/p&gt;
+&lt;h2 id="六报告中的正确写法"&gt;六、报告中的正确写法
+&lt;/h2&gt;&lt;p&gt;示例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;发现：SSH 服务存在弱口令迹象，登录失败日志中出现异常频率尝试。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;风险：可能导致未授权访问和横向移动。
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;建议：强制强密码；启用 MFA；限制源 IP；开启账户锁定和告警。
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="七小结"&gt;七、小结
+&lt;/h2&gt;&lt;p&gt;弱口令问题的核心不是工具，而是身份验证设计。理解爆破行为后，更要理解系统如何发现、阻断和审计这些异常。&lt;/p&gt;</description></item></channel></rss>
