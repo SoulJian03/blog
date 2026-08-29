@@ -45,6 +45,19 @@
 &lt;/h3&gt;&lt;p&gt;服务端检查请求来源是否可信。&lt;/p&gt;
 &lt;h3 id="4-重要操作二次确认"&gt;4. 重要操作二次确认
 &lt;/h3&gt;&lt;p&gt;例如转账、改密、删除等动作要求再次输入密码或验证码。&lt;/p&gt;
+&lt;h2 id="影响与危害"&gt;影响与危害
+&lt;/h2&gt;&lt;p&gt;CSRF 与 SSRF 造成的影响：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;CSRF：在用户不知情下执行敏感操作（改密、转账、删数据）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SSRF：服务器成为跳板，访问内网/云元数据/扫描内部端口
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;SSRF 常被用来打内网和云平台（如 169.254.169.254 元数据）。风险等级：中到高。&lt;/p&gt;
 &lt;h2 id="三ssrf让服务器替你访问别的地址"&gt;三、SSRF：让服务器替你访问别的地址
 &lt;/h2&gt;&lt;p&gt;SSRF（服务端请求伪造）的核心是：服务器根据用户提供的 URL 发起请求，结果访问了内部地址或其他敏感目标。&lt;/p&gt;
 &lt;p&gt;常见场景：&lt;/p&gt;
@@ -108,7 +121,20 @@
 &lt;/h3&gt;&lt;p&gt;避免成为请求放大或探测跳板。&lt;/p&gt;
 &lt;h3 id="5-输出与日志审计"&gt;5. 输出与日志审计
 &lt;/h3&gt;&lt;p&gt;记录被访问的 URL、响应状态和调用来源。&lt;/p&gt;
-&lt;h2 id="五csrf-与-ssrf-在报告中的写法"&gt;五、CSRF 与 SSRF 在报告中的写法
+&lt;h2 id="修复"&gt;修复
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;CSRF：校验 Referer/Origin + 使用 CSRF Token + SameSite Cookie
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SSRF：服务端 URL 白名单、禁止访问内网地址、禁用重定向跟随、对响应做过滤
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;修复后复测：跨站请求被拦截、内网访问被阻断
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="五csrf-与-ssrf-在报告中的写法"&gt;五、CSRF 与 SSRF 在报告中的写法
 &lt;/h2&gt;&lt;p&gt;好的报告要写出触发条件、影响和修复建议。&lt;/p&gt;
 &lt;p&gt;CSRF 示例：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;

@@ -1,7 +1,23 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Shiro on SoulJian小站</title><link>https://souljian.cn/tags/shiro/</link><description>Recent content in Shiro on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 11:20:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/shiro/index.xml" rel="self" type="application/rss+xml"/><item><title>Shiro rememberMe 反序列化漏洞复现</title><link>https://souljian.cn/p/751088036/</link><pubDate>Sat, 29 Aug 2026 11:20:00 +0800</pubDate><guid>https://souljian.cn/p/751088036/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Shiro on SoulJian小站</title><link>https://souljian.cn/tags/shiro/</link><description>Recent content in Shiro on SoulJian小站</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 29 Aug 2026 12:20:00 +0800</lastBuildDate><atom:link href="https://souljian.cn/tags/shiro/index.xml" rel="self" type="application/rss+xml"/><item><title>Shiro rememberMe 反序列化漏洞复现</title><link>https://souljian.cn/p/751088036/</link><pubDate>Sat, 29 Aug 2026 11:20:00 +0800</pubDate><guid>https://souljian.cn/p/751088036/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;本文复现只在本机靶场进行。Shiro 反序列化利用可直接控制目标机器，禁止对非授权目标使用。&lt;/p&gt;
-&lt;h2 id="一漏洞背景"&gt;一、漏洞背景
-&lt;/h2&gt;&lt;p&gt;Shiro 的“记住我”功能会把身份信息序列化后用 AES 加密，放进 &lt;code&gt;rememberMe&lt;/code&gt; Cookie。如果 AES 密钥是硬编码的默认密钥，攻击者就能自己用同一把密钥构造恶意序列化对象，服务端反序列化时触发命令执行。&lt;/p&gt;
+&lt;h2 id="一漏洞原理"&gt;一、漏洞原理
+&lt;/h2&gt;&lt;p&gt;Shiro 的“记住我”功能会把用户身份序列化后，用 AES 加密放进 &lt;code&gt;rememberMe&lt;/code&gt; Cookie。&lt;/p&gt;
+&lt;p&gt;成因链路：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;1. 序列化对象用 AES 加密
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;2. AES 密钥是硬编码的默认密钥
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;3. 攻击者知道密钥 → 能构造并加密任意序列化对象
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;4. 服务端反序列化时执行恶意 gadget
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;漏洞本质：&lt;strong&gt;安全组件使用了公开的默认密钥 + 反序列化无类白名单&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;常见默认密钥：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
@@ -13,10 +29,24 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;4AvVhmFLUs0KTA3Kprsdag==
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;影响版本：Shiro &amp;lt;= 1.2.4（默认密钥版本）以及使用弱密钥的任意版本。&lt;/p&gt;
-&lt;h2 id="二环境准备"&gt;二、环境准备
-&lt;/h2&gt;&lt;p&gt;用 Docker 起 Shiro 靶场：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;/div&gt;&lt;p&gt;影响版本：Shiro &amp;lt;= 1.2.4，以及任何使用弱/默认密钥的版本。&lt;/p&gt;
+&lt;h2 id="二漏洞影响与危害"&gt;二、漏洞影响与危害
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;远程代码执行（RCE）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;直接控制服务器
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;读取敏感数据、内网横向
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;风险等级：&lt;strong&gt;严重&lt;/strong&gt;。只需一个 Cookie，无需账号密码，一旦命中就是整台机器沦陷。&lt;/p&gt;
+&lt;h2 id="三漏洞利用--复现"&gt;三、漏洞利用 / 复现
+&lt;/h2&gt;&lt;h3 id="环境准备"&gt;环境准备
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
@@ -25,9 +55,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;p&gt;访问 &lt;code&gt;http://127.0.0.1:8082/&lt;/code&gt;，登录框勾选 Remember Me。&lt;/p&gt;
-&lt;h2 id="三确认是否为目标组件"&gt;三、确认是否为目标组件
-&lt;/h2&gt;&lt;p&gt;先用浏览器或 curl 看响应里有没有特征：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;h3 id="确认目标组件"&gt;确认目标组件
+&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
@@ -35,9 +64,9 @@
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;curl -i http://127.0.0.1:8082/ &lt;span class="p"&gt;|&lt;/span&gt; grep -i &lt;span class="s2"&gt;&amp;#34;Set-Cookie&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;如果响应带 &lt;code&gt;rememberMe=deleteMe&lt;/code&gt;，说明是 Shiro，可继续验证。&lt;/p&gt;
-&lt;h2 id="四构造利用"&gt;四、构造利用
-&lt;/h2&gt;&lt;p&gt;利用思路分三步：&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;如果响应带 &lt;code&gt;rememberMe=deleteMe&lt;/code&gt;，说明是 Shiro。&lt;/p&gt;
+&lt;h3 id="构造利用"&gt;构造利用
+&lt;/h3&gt;&lt;p&gt;利用分三步：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
@@ -45,12 +74,12 @@
 &lt;/span&gt;&lt;span class="lnt"&gt;3
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;1. 用 ysoserial 生成反序列化 gadget（如 CommonsCollections）
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;1. ysoserial 生成 gadget（如 CommonsCollections6）
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;2. 用默认 AES 密钥加密序列化对象
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;3. 把结果 Base64 后放进 rememberMe Cookie 发给靶机
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;3. Base64 后放进 rememberMe Cookie 发给靶机
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;常见工具：&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;常用工具：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
@@ -63,7 +92,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ysoserial + 手动 AES
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;手动验证（需要 ysoserial 和 AES 密钥）：&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;手动构造示意：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
@@ -74,35 +103,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; openssl enc -e -aes-128-cbc -K &amp;lt;hexkey&amp;gt; -iv &amp;lt;16字节iv&amp;gt; -nosalt &lt;span class="p"&gt;|&lt;/span&gt; base64
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;把生成的 Base64 作为 &lt;code&gt;rememberMe&lt;/code&gt; Cookie 发送，目标执行 &lt;code&gt;id&lt;/code&gt;。&lt;/p&gt;
-&lt;h2 id="五为什么能成功"&gt;五、为什么能成功
+&lt;/div&gt;&lt;p&gt;把结果作为 &lt;code&gt;rememberMe&lt;/code&gt; Cookie 发送，目标执行 &lt;code&gt;id&lt;/code&gt;。&lt;/p&gt;
+&lt;h2 id="四漏洞检测"&gt;四、漏洞检测
 &lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;密钥默认且公开 → 攻击者能加密任意对象
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;反序列化无类白名单 → 直接加载 gadget 链
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;两个条件缺一不可，所以防御也要从这两点入手。&lt;/p&gt;
-&lt;h2 id="六检测与防御"&gt;六、检测与防御
-&lt;/h2&gt;&lt;h3 id="检测"&gt;检测
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;抓取 rememberMe Cookie，尝试用公开默认密钥解密
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;请求日志中找异常长的 rememberMe 值
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;观察 cookie 是否带 deleteMe 特征并批量探测
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h3 id="防御"&gt;防御
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
 &lt;/span&gt;&lt;span class="lnt"&gt;2
@@ -110,11 +113,41 @@
 &lt;/span&gt;&lt;span class="lnt"&gt;4
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;升级 Shiro 到 1.4.2+，并自定义高强度密钥（禁止默认值）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;密钥定期轮换，密钥不要进代码库
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;抓响应中的 rememberMe=deleteMe 特征
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;用公开默认密钥字典尝试解密 Cookie
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;观察异常长的 rememberMe 值
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;指纹识别 Shiro 版本
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="五漏洞防御"&gt;五、漏洞防御
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;WAF 拦截异常长的 rememberMe Cookie
 &lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;反序列化加类白名单
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;WAF 拦截异常长的 rememberMe
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;对敏感 Cookie 做加密与签名分离
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;监控批量 rememberMe 探测行为
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="六漏洞修复"&gt;六、漏洞修复
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;升级 Shiro 到 1.4.2+
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;自定义高强度密钥，禁止默认值
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;密钥不进代码库，走配置中心并定期轮换
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;升级后复测默认密钥解密是否失效
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="七小结"&gt;七、小结
-&lt;/h2&gt;&lt;p&gt;Shiro 漏洞提醒我们：安全组件的“默认密钥”等于没有密钥。实战中，看到 &lt;code&gt;rememberMe=deleteMe&lt;/code&gt; 就能快速锁定目标，再用默认密钥字典验证。防御侧的核心就是换掉默认密钥 + 升级 + 白名单。&lt;/p&gt;</description></item></channel></rss>
+&lt;/h2&gt;&lt;p&gt;Shiro 漏洞说明“默认密钥 = 没有密钥”。实战中 &lt;code&gt;rememberMe=deleteMe&lt;/code&gt; 是快速识别特征；防御核心是换掉默认密钥 + 升级 + 反序列化白名单。&lt;/p&gt;</description></item></channel></rss>
