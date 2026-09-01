@@ -1,159 +1,88 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><title>EDR 专项：终端检测与响应</title><link rel=canonical href=https://souljian.cn/p/751088087/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="EDR 专项：终端检测与响应"><meta property='og:description' content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><meta property='og:url' content='https://souljian.cn/p/751088087/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='EDR'><meta property='article:tag' content='终端安全'><meta property='article:tag' content='检测响应'><meta property='article:tag' content='EDR绕过'><meta property='article:tag' content='安全运维'><meta property='article:published_time' content='2026-08-29T15:30:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="EDR 专项：终端检测与响应"><meta name=twitter:description content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><title>IPS / IDS 专项：入侵检测与防御</title><link rel=canonical href=https://souljian.cn/p/751088087/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="EDR 专项：终端检测与响应"><meta property='og:description' content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><meta property='og:url' content='https://souljian.cn/p/751088087/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='IDS'><meta property='article:tag' content='IPS'><meta property='article:tag' content='入侵检测'><meta property='article:tag' content='安全运维'><meta property='article:tag' content='安全设备'><meta property='article:published_time' content='2026-08-29T22:20:00+08:00'><meta property='article:modified_time' content='2026-08-29T22:20:00+08:00'><meta name=twitter:title content="EDR 专项：终端检测与响应"><meta name=twitter:description content="EDR 原理与实战：Agent 架构、行为检测、内存分析、C2 检测、EDR 绕过与对抗，含架构图与部署建议。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一什么是-edr>一、什么是 EDR</a></li><li><a href=#二edr-架构图>二、EDR 架构图</a></li><li><a href=#三edr-工作原理>三、EDR 工作原理</a></li><li><a href=#四edr-检测能力>四、EDR 检测能力</a></li><li><a href=#五部署>五、部署</a></li><li><a href=#六edr-绕过攻防对抗>六、EDR 绕过（攻防对抗）</a></li><li><a href=#七报告中的正确写法>七、报告中的正确写法</a></li><li><a href=#八小结>八、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088087/>IPS / IDS 专项：入侵检测与防御</a></h2><h3 class=article-subtitle>IDS 与 IPS 的区别、部署位置、检测原理（特征/异常/行为）、规则与告警研判、主流厂商，及常见绕过与运维。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一ids-与-ips-的区别>一、IDS 与 IPS 的区别</a></li><li><a href=#二检测原理>二、检测原理</a><ol><li><a href=#1-特征检测基于规则>1. 特征检测（基于规则）</a></li><li><a href=#2-异常检测基于行为基线>2. 异常检测（基于行为/基线）</a></li><li><a href=#3-关联协议分析>3. 关联/协议分析</a></li></ol></li><li><a href=#三部署位置>三、部署位置</a></li><li><a href=#四告警研判>四、告警研判</a></li><li><a href=#五常见绕过理解攻防>五、常见绕过（理解攻防）</a></li><li><a href=#六主流厂商>六、主流厂商</a></li><li><a href=#七运维要点>七、运维要点</a></li><li><a href=#部署与操作步骤>部署与操作步骤</a></li><li><a href=#影响与适用>影响与适用</a></li><li><a href=#八小结>八、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088087/>IPS / IDS 专项：入侵检测与防御</a></h2><h3 class=article-subtitle>IDS 与 IPS 的区别、部署位置、检测原理（特征/异常/行为）、规则与告警研判、主流厂商，及常见绕过与运维。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published datetime=2026-08-29T22:20:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>EDR 测试只用于授权环境。对非授权系统测试 EDR 绕过可能触犯法律。</p><h2 id=一什么是-edr>一、什么是 EDR</h2><p>EDR（Endpoint Detection and Response）是部署在终端（Windows/Linux 服务器/工作站）上的检测和响应平台。它比传统杀毒更强大——<strong>记录行为而非只看签名</strong>。</p><h2 id=二edr-架构图>二、EDR 架构图</h2><img src=/img/edr-arch.svg alt="EDR 架构部署图"><h2 id=三edr-工作原理>三、EDR 工作原理</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>本文介绍 IDS/IPS 的运维与检测，用于授权环境。不要对真实系统做规避检测的测试。</p><h2 id=一ids-与-ips-的区别>一、IDS 与 IPS 的区别</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>IDS（入侵检测）：旁路监听，只发现、告警，不阻断
+</span></span><span class=line><span class=cl>IPS（入侵防御）：串接在链路，发现即阻断
+</span></span></code></pre></td></tr></table></div></div><p>一句话：<strong>IDS 是“看门狗”，IPS 是“拦路虎”</strong>。</p><div class=table-wrapper><table><thead><tr><th>维度</th><th>IDS</th><th>IPS</th></tr></thead><tbody><tr><td>部署</td><td>旁路（镜像流量）</td><td>串接（链路中）</td></tr><tr><td>动作</td><td>告警</td><td>阻断 + 告警</td></tr><tr><td>风险</td><td>不影响业务</td><td>误杀会断业务</td></tr><tr><td>用途</td><td>检测/取证</td><td>实时防御</td></tr></tbody></table></div><h2 id=二检测原理>二、检测原理</h2><h3 id=1-特征检测基于规则>1. 特征检测（基于规则）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>匹配已知攻击特征（签名库）
+</span></span><span class=line><span class=cl>例：SQL 注入关键字、恶意 payload 特征
+</span></span><span class=line><span class=cl>优点：准确；缺点：只能查已知
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-异常检测基于行为基线>2. 异常检测（基于行为/基线）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>偏离正常流量基线 → 告警
+</span></span><span class=line><span class=cl>例：异常协议、异常端口、流量突增
+</span></span><span class=line><span class=cl>优点：能发现未知；缺点：误报多
+</span></span></code></pre></td></tr></table></div></div><h3 id=3-关联协议分析>3. 关联/协议分析</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>检查协议字段是否合规
+</span></span><span class=line><span class=cl>发现畸形包、协议滥用
+</span></span></code></pre></td></tr></table></div></div><h2 id=三部署位置>三、部署位置</h2><img src=/img/ips-ids-deploy.svg alt=IPS串接与IDS旁路部署对比图><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
-</span><span class=lnt>9
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Agent（传感器）：
-</span></span><span class=line><span class=cl>• 常驻内核级 Hook（文件/进程/网络/注册表）
-</span></span><span class=line><span class=cl>• 实时捕获所有终端行为
-</span></span><span class=line><span class=cl>• 将行为数据上传到 Console（控制台）
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>Console（控制台）：
-</span></span><span class=line><span class=cl>• 行为基线分析（建立正常行为模型）
-</span></span><span class=line><span class=cl>• 威胁检测引擎（规则 + 机器学习）
-</span></span><span class=line><span class=cl>• 告警与响应（隔离/封禁/取证）
-</span></span></code></pre></td></tr></table></div></div><h2 id=四edr-检测能力>四、EDR 检测能力</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span><span class=lnt>22
-</span><span class=lnt>23
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 进程检测：
-</span></span><span class=line><span class=cl>   • 异常父子进程关系
-</span></span><span class=line><span class=cl>   • 进程注入（代码注入到其他进程）
-</span></span><span class=line><span class=cl>   • 无文件执行（内存中执行，无磁盘文件）
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>2. 文件检测：
-</span></span><span class=line><span class=cl>   • 敏感文件访问（SAM/ntds.dit/凭证文件）
-</span></span><span class=line><span class=cl>   • 文件隐藏/加密/删除
-</span></span><span class=line><span class=cl>   • WebShell 上传检测
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>3. 网络检测：
-</span></span><span class=line><span class=cl>   • C2 外联（DNS/HTTPS 到陌生 IP）
-</span></span><span class=line><span class=cl>   • 隧道流量检测
-</span></span><span class=line><span class=cl>   • DNS 隧道行为
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>4. 注册表检测（Windows）：
-</span></span><span class=line><span class=cl>   • Run 键变更
-</span></span><span class=line><span class=cl>   • 服务创建/修改
-</span></span><span class=line><span class=cl>   • 计划任务变更
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>5. 内存检测：
-</span></span><span class=line><span class=cl>   • AMSI 绕过检测
-</span></span><span class=line><span class=cl>   • 进程空指针/合法进程异常
-</span></span></code></pre></td></tr></table></div></div><h2 id=五部署>五、部署</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>边界（防火墙后）：防外部攻击
+</span></span><span class=line><span class=cl>DMZ：保护对外服务
+</span></span><span class=line><span class=cl>核心区/服务器区：防东西向与横向
+</span></span><span class=line><span class=cl>终端/东西向：配合 EDR
+</span></span></code></pre></td></tr></table></div></div><h2 id=四告警研判>四、告警研判</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span><span class=lnt>7
-</span><span class=lnt>8
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Windows Agent 部署（以 CrowdStrike Falcon 为例）</span>
-</span></span><span class=line><span class=cl><span class=c1># 1. 下载 Installer</span>
-</span></span><span class=line><span class=cl><span class=c1># 2. 指定 Console ID</span>
-</span></span><span class=line><span class=cl>msiexec /i FalconSensor.msi /qn <span class=nv>FASTINSTALLID</span><span class=o>=</span>xxx <span class=nv>SENSOR_UPDATE_LOCATION</span><span class=o>=</span>https://update.falcon
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># Linux Agent 部署</span>
-</span></span><span class=line><span class=cl><span class=c1># 下载 .deb/.rpm 包</span>
-</span></span><span class=line><span class=cl>sudo apt install ./falcon-sensor.deb
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>看：源/目的、攻击类型、命中规则、时间
+</span></span><span class=line><span class=cl>验证：是否真实攻击（误报 vs 真告警）
+</span></span><span class=line><span class=cl>处置：封 IP、阻断会话、取证、升级规则
+</span></span></code></pre></td></tr></table></div></div><h2 id=五常见绕过理解攻防>五、常见绕过（理解攻防）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>编码绕过（URL/Base64/Unicode）
+</span></span><span class=line><span class=cl>分片、加密流量（TLS 内看不到）
+</span></span><span class=line><span class=cl>慢速扫描、分布式攻击
 </span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>这也是为什么要“特征 + 异常 + 情报”一起看
+</span></span></code></pre></td></tr></table></div></div><h2 id=六主流厂商>六、主流厂商</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>绿盟、启明星辰、华为、深信服、山石网科、奇安信、天融信
+</span></span><span class=line><span class=cl>（NGFW 通常内置 IPS 模块）
+</span></span><span class=line><span class=cl>（开源：Snort、Suricata 可做检测）
+</span></span></code></pre></td></tr></table></div></div><h2 id=七运维要点>七、运维要点</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>部署要点：
-</span></span><span class=line><span class=cl>1. 全量覆盖：所有服务器和工作站都要部署
-</span></span><span class=line><span class=cl>2. 分阶段上线：先试点 10%，观察稳定性后全量
-</span></span><span class=line><span class=cl>3. 网络带宽：Agent 上报数据量预估（每台 ~1-5MB/天）
-</span></span><span class=line><span class=cl>4. 性能影响：内核 Hook 有 1-5% 性能开销
-</span></span></code></pre></td></tr></table></div></div><h2 id=六edr-绕过攻防对抗>六、EDR 绕过（攻防对抗）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
-</span><span class=lnt> 2
-</span><span class=lnt> 3
-</span><span class=lnt> 4
-</span><span class=lnt> 5
-</span><span class=lnt> 6
-</span><span class=lnt> 7
-</span><span class=lnt> 8
-</span><span class=lnt> 9
-</span><span class=lnt>10
-</span><span class=lnt>11
-</span><span class=lnt>12
-</span><span class=lnt>13
-</span><span class=lnt>14
-</span><span class=lnt>15
-</span><span class=lnt>16
-</span><span class=lnt>17
-</span><span class=lnt>18
-</span><span class=lnt>19
-</span><span class=lnt>20
-</span><span class=lnt>21
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>常见绕过手法：
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>1. 驱动卸载：
-</span></span><span class=line><span class=cl>   • 通过注册表禁用 EDR 驱动加载
-</span></span><span class=line><span class=cl>   • 注意：部分 EDR 有防卸载保护
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>2. AMSI 绕过：
-</span></span><span class=line><span class=cl>   • Patch AMSI.dll 的 buffer 指针
-</span></span><span class=line><span class=cl>   • 让 PowerShell 脚本不被检测
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>3. 合法工具滥用（Living off the Land）：
-</span></span><span class=line><span class=cl>   • 用 PowerShell/WMI/MSBuild 执行，不走磁盘
-</span></span><span class=line><span class=cl>   • EDR 只能监控行为，无法阻止合法工具
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>4. C2 协议混淆：
-</span></span><span class=line><span class=cl>   • HTTPS + 证书合法 + 域名混在正常流量中
-</span></span><span class=line><span class=cl>   • 让 EDR 网络检测无法区分
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl>5. 无文件执行：
-</span></span><span class=line><span class=cl>   • 直接在内存中执行，不落地任何文件
-</span></span><span class=line><span class=cl>   • 配合进程注入合法进程
-</span></span></code></pre></td></tr></table></div></div><h2 id=七报告中的正确写法>七、报告中的正确写法</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>特征库及时更新
+</span></span><span class=line><span class=cl>规则分级（高/中/低），避免告警淹没
+</span></span><span class=line><span class=cl>IPS 上线先观察模式再阻断，防误杀
+</span></span><span class=line><span class=cl>与防火墙/态势感知联动
+</span></span><span class=line><span class=cl>定期复盘告警质量（降噪）
+</span></span></code></pre></td></tr></table></div></div><h2 id=部署与操作步骤>部署与操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>发现：EDR 控制台检测到主机 10.0.0.5 存在异常进程注入行为（explorer.exe 创建 powershell.exe 子进程，
-</span></span><span class=line><span class=cl>且 powershell 执行 AMSI 绕过操作），同时存在 DNS 高频外联（500+ 次/分钟）。
-</span></span><span class=line><span class=cl>影响：疑似攻击者已突破边界防御，在内网主机上部署 C2。
-</span></span><span class=line><span class=cl>建议：立即隔离该主机；检查横向移动痕迹；对同网段主机做全量 EDR 扫描。
-</span></span></code></pre></td></tr></table></div></div><h2 id=八小结>八、小结</h2><p>EDR 是终端安全的最后防线，但绝非银弹。核心检测能力是行为分析而非签名匹配。攻击者的绕过核心是"合法工具 + 内存执行 + 流量混淆"。防守的核心是"全覆盖 + 持续调优 + 及时升级"。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/edr/>EDR</a>
-<a href=/tags/%E7%BB%88%E7%AB%AF%E5%AE%89%E5%85%A8/>终端安全</a>
-<a href=/tags/%E6%A3%80%E6%B5%8B%E5%93%8D%E5%BA%94/>检测响应</a>
-<a href=/tags/edr%E7%BB%95%E8%BF%87/>EDR绕过</a>
-<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>应急响应处置与事件溯源实战</h2></div></a></article><article><a href=/p/751088089/><div class=article-details><h2 class=article-title>态势感知专项：平台功能与厂商对比</h2></div></a></article><article><a href=/p/751088087/><div class=article-details><h2 class=article-title>IPS / IDS 专项：入侵检测与防御</h2></div></a></article><article><a href=/p/751088088/><div class=article-details><h2 class=article-title>防火墙专项：传统与下一代防火墙（NGFW）</h2></div></a></article><article><a href=/p/751088086/><div class=article-details><h2 class=article-title>蜜罐专项：部署、识别与对抗</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：确定部署方式（IDS 旁路镜像口 / IPS 串接链路）
+</span></span><span class=line><span class=cl>第 2 步：IDS 接交换机镜像口；IPS 串接在边界或核心前
+</span></span><span class=line><span class=cl>第 3 步：导入规则并分级（高/中/低）
+</span></span><span class=line><span class=cl>第 4 步：IPS 先观察模式运行，确认无误再开阻断
+</span></span><span class=line><span class=cl>第 5 步：接日志到态势感知，联动防火墙封堵
+</span></span><span class=line><span class=cl>第 6 步：定期更新特征库并复盘告警降噪
+</span></span></code></pre></td></tr></table></div></div><h2 id=影响与适用>影响与适用</h2><p>IDS 看、IPS 挡，部署位置决定了检测与阻断能力。理解原理才能配置到位。</p><h2 id=八小结>八、小结</h2><p>IDS 管“发现”，IPS 管“拦截”。部署上 IDS 旁路、IPS 串接；检测上特征查已知、异常查未知。实际运营的难点是<strong>降噪和防误杀</strong>，所以要“观察→阻断”两步走，并与防火墙/态势感知联动。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/ids/>IDS</a>
+<a href=/tags/ips/>IPS</a>
+<a href=/tags/%E5%85%A5%E4%BE%B5%E6%A3%80%E6%B5%8B/>入侵检测</a>
+<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a>
+<a href=/tags/%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87/>安全设备</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088089/><div class=article-details><h2 class=article-title>态势感知专项：平台功能与厂商对比</h2></div></a></article><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>应急响应处置与事件溯源实战</h2></div></a></article><article><a href=/p/751088088/><div class=article-details><h2 class=article-title>防火墙专项：传统与下一代防火墙（NGFW）</h2></div></a></article><article><a href=/p/751088087/><div class=article-details><h2 class=article-title>EDR 专项：终端检测与响应</h2></div></a></article><article><a href=/p/751088086/><div class=article-details><h2 class=article-title>蜜罐专项：部署、识别与对抗</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>
