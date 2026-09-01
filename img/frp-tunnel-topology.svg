@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="100%" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr-f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e74c3c"/>
+    </marker>
+    <marker id="arr-f2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2980b9"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="560" fill="#f8fafc" rx="10"/>
+
+  <text x="40" y="42" font-size="22" font-weight="bold" fill="#111">frp 隧道拓扑图：Socks5 代理 + 端口转发</text>
+  <text x="40" y="64" font-size="14" fill="#666">frps（服务端，攻击机） ↔ frpc（客户端，内网跳板机）</text>
+
+  <line x1="480" y1="80" x2="480" y2="500" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="380" y="98" font-size="14" font-weight="bold" fill="#555">公网 / 攻击侧</text>
+  <text x="570" y="98" font-size="14" font-weight="bold" fill="#555">内网 / 目标侧</text>
+
+  <!-- 攻击机 -->
+  <rect x="30" y="160" width="220" height="130" rx="12" fill="#fee2e2" stroke="#c0392b" stroke-width="2.5"/>
+  <text x="140" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🖥️ 攻击机 / 公网 VPS</text>
+  <text x="140" y="222" font-size="13" text-anchor="middle" fill="#555">运行: frps</text>
+  <text x="140" y="242" font-size="12" text-anchor="middle" fill="#555">监听: 7000（frp 通信）</text>
+  <text x="140" y="262" font-size="12" text-anchor="middle" fill="#555">Socks5: 1080</text>
+  <text x="140" y="280" font-size="12" text-anchor="middle" fill="#555">RDP 映射: 13389</text>
+
+  <!-- 跳板机 -->
+  <rect x="560" y="160" width="220" height="130" rx="12" fill="#dbeafe" stroke="#2980b9" stroke-width="2.5"/>
+  <text x="670" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🔑 跳板机 / 已控内网主机</text>
+  <text x="670" y="222" font-size="13" text-anchor="middle" fill="#555">运行: frpc</text>
+  <text x="670" y="242" font-size="12" text-anchor="middle" fill="#555">连接: frps:7000</text>
+  <text x="670" y="262" font-size="12" text-anchor="middle" fill="#555">插件: socks5 代理全内网</text>
+  <text x="670" y="280" font-size="12" text-anchor="middle" fill="#555">或端口转发到内网目标</text>
+
+  <!-- 内网目标 -->
+  <rect x="900" y="160" width="220" height="130" rx="12" fill="#fef9c3" stroke="#b45309" stroke-width="2.5"/>
+  <text x="1010" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🎯 内网目标主机</text>
+  <text x="1010" y="222" font-size="13" text-anchor="middle" fill="#555">RDP 3389 / MySQL 3306</text>
+  <text x="1010" y="242" font-size="12" text-anchor="middle" fill="#555">Web 80/443</text>
+  <text x="1010" y="262" font-size="12" text-anchor="middle" fill="#555">数据库 1433</text>
+
+  <!-- 通信链路 -->
+  <path d="M 250 225 L 555 225" stroke="#c0392b" stroke-width="3" fill="none" marker-end="url(#arr-f1)"/>
+  <text x="400" y="212" font-size="13" fill="#c0392b" text-anchor="middle" font-weight="bold">frp 自定义协议（加密）</text>
+  <text x="400" y="248" font-size="12" fill="#c0392b" text-anchor="middle">frpc → frps（7000端口）</text>
+
+  <path d="M 780 235 C 850 280, 870 280, 895 235" stroke="#2980b9" stroke-width="2.5" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-f2)"/>
+  <text x="840" y="300" font-size="11" fill="#2980b9" text-anchor="middle">frpc 代理内网流量 → frps</text>
+
+  <!-- 模式说明区 -->
+  <rect x="30" y="340" width="1140" height="180" rx="10" fill="#ffffff" stroke="#ddd" stroke-width="1"/>
+
+  <text x="50" y="370" font-size="16" font-weight="bold" fill="#c0392b">场景A：Socks5 代理（全内网扫描）</text>
+  <text x="50" y="392" font-size="13" fill="#333">frpc.ini 配置 plugin = socks5</text>
+  <text x="50" y="414" font-size="13" fill="#333">攻击机用 proxychains4 配合 1080 端口扫描 10.0.0.0/24</text>
+  <text x="50" y="436" font-size="13" fill="#333">→ 流量路径：攻击机 → frps(1080) → frp协议 → frpc(socks5) → 内网目标</text>
+
+  <text x="50" y="470" font-size="16" font-weight="bold" fill="#2980b9">场景B：端口转发（单端口映射）</text>
+  <text x="50" y="492" font-size="13" fill="#333">frpc.ini 配置 [rdp] type=tcp, local_port=3389, remote_port=13389</text>
+  <text x="50" y="514" font-size="13" fill="#333">攻击机直接 rdesktop frps_IP:13389 访问内网 RDP</text>
+  <text x="50" y="536" font-size="13" fill="#333">→ 流量路径：攻击机 → frps(13389) → frp协议 → frpc → 内网10.0.0.5:3389</text>
+</svg>

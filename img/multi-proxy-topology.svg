@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="100%" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr-m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arr-m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2980b9"/>
+    </marker>
+    <marker id="arr-m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#27ae60"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="560" fill="#f8fafc" rx="10"/>
+  <text x="40" y="42" font-size="22" font-weight="bold" fill="#111">内网多级代理拓扑图：纵深穿透代理链</text>
+  <text x="40" y="64" font-size="14" fill="#666">攻击机 → 跳板1 → 跳板2 → 目标网段（SSH ProxyJump / frp 级联 / EW 串联）</text>
+
+  <line x1="440" y1="80" x2="440" y2="380" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="6,4"/>
+  <line x1="780" y1="80" x2="780" y2="380" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="340" y="98" font-size="14" font-weight="bold" fill="#555">攻击侧</text>
+  <text x="560" y="98" font-size="14" font-weight="bold" fill="#555">内网层1</text>
+  <text x="900" y="98" font-size="14" font-weight="bold" fill="#555">内网层2（核心）</text>
+
+  <!-- 攻击机 -->
+  <rect x="30" y="160" width="200" height="120" rx="12" fill="#fee2e2" stroke="#c0392b" stroke-width="2.5"/>
+  <text x="130" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🖥️ 攻击机</text>
+  <text x="130" y="220" font-size="13" text-anchor="middle" fill="#555">proxychains / frps</text>
+  <text x="130" y="240" font-size="12" text-anchor="middle" fill="#555">Socks: 1080</text>
+  <text x="130" y="258" font-size="12" text-anchor="middle" fill="#555">frp监听: 7000</text>
+
+  <!-- 跳板1 -->
+  <rect x="460" y="160" width="200" height="120" rx="12" fill="#dbeafe" stroke="#2980b9" stroke-width="2.5"/>
+  <text x="560" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🔑 跳板1</text>
+  <text x="560" y="220" font-size="13" text-anchor="middle" fill="#555">SSH可达</text>
+  <text x="560" y="240" font-size="12" text-anchor="middle" fill="#555">frpc → 攻击机:7000</text>
+  <text x="560" y="258" font-size="12" text-anchor="middle" fill="#555">或 ProxyJump 中转</text>
+
+  <!-- 跳板2 -->
+  <rect x="800" y="160" width="180" height="120" rx="12" fill="#fef9c3" stroke="#b45309" stroke-width="2.5"/>
+  <text x="890" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🔑 跳板2</text>
+  <text x="890" y="220" font-size="13" text-anchor="middle" fill="#555">内网层2入口</text>
+  <text x="890" y="240" font-size="12" text-anchor="middle" fill="#555">frpc → 跳板1:7100</text>
+  <text x="890" y="258" font-size="12" text-anchor="middle" fill="#555">或 ProxyJump 第2级</text>
+
+  <!-- 目标 -->
+  <rect x="1010" y="160" width="160" height="120" rx="12" fill="#e8f5e9" stroke="#27ae60" stroke-width="2.5"/>
+  <text x="1090" y="195" font-size="18" text-anchor="middle" fill="#111" font-weight="bold">🎯 目标</text>
+  <text x="1090" y="220" font-size="13" text-anchor="middle" fill="#555">DC / 数据库</text>
+  <text x="1090" y="240" font-size="12" text-anchor="middle" fill="#555">10.20.0.5</text>
+
+  <!-- 链路1: 攻击机 → 跳板1 -->
+  <path d="M 230 220 L 450 220" stroke="#c0392b" stroke-width="3" fill="none" marker-end="url(#arr-m1)"/>
+  <text x="340" y="205" font-size="12" fill="#c0392b" text-anchor="middle" font-weight="bold">SSH/frp 一级</text>
+
+  <!-- 链路2: 跳板1 → 跳板2 -->
+  <path d="M 660 220 L 790 220" stroke="#2980b9" stroke-width="3" fill="none" marker-end="url(#arr-m2)"/>
+  <text x="725" y="205" font-size="12" fill="#2980b9" text-anchor="middle" font-weight="bold">SSH/frp 二级</text>
+
+  <!-- 链路3: 跳板2 → 目标 -->
+  <path d="M 980 220 L 1005 220" stroke="#27ae60" stroke-width="3" fill="none" marker-end="url(#arr-m3)"/>
+  <text x="992" y="205" font-size="12" fill="#27ae60" text-anchor="middle" font-weight="bold">直连</text>
+
+  <!-- 汇聚线（Socks 代理回攻击机） -->
+  <path d="M 980 270 C 850 320, 350 340, 230 270" stroke="#2980b9" stroke-width="2" stroke-dasharray="4,3" fill="none" marker-end="url(#arr-m2)"/>
+  <text x="600" y="335" font-size="12" fill="#2980b9" text-anchor="middle">Socks5 代理链（frp 级联/ProxyJump）：攻击机 1080 端口</text>
+
+  <!-- 底部说明 -->
+  <rect x="30" y="390" width="1140" height="150" rx="10" fill="#ffffff" stroke="#ddd" stroke-width="1"/>
+  <text x="50" y="420" font-size="16" font-weight="bold" fill="#111">三种多级代理方案对比</text>
+
+  <text x="50" y="448" font-size="14" font-weight="bold" fill="#c0392b">SSH ProxyJump（最轻量）</text>
+  <text x="280" y="448" font-size="13" fill="#333">ssh -J user1@跳板1,user2@跳板2 user3@目标IP</text>
+  <text x="280" y="468" font-size="12" fill="#555">无需额外工具，仅 SSH 命令串联多级跳板</text>
+
+  <text x="50" y="492" font-size="14" font-weight="bold" fill="#2980b9">frp 级联（最灵活）</text>
+  <text x="280" y="492" font-size="13" fill="#333">frps←frpc1(frps)←frpc2(socks5) 逐层建立，支持加密</text>
+  <text x="280" y="512" font-size="12" fill="#555">每级一个 frp 实例，适合复杂内网环境</text>
+
+  <text x="50" y="536" font-size="14" font-weight="bold" fill="#27ae60">EW 串联（老方案）</text>
+  <text x="280" y="536" font-size="13" fill="#333">ew -s rcsocks + lcx_tran 逐级转发，无加密</text>
+  <text x="280" y="550" font-size="12" fill="#555">功能全但明文传输，已被 SSH/frp 替代</text>
+</svg>

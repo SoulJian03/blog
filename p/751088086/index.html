@@ -1,112 +1,139 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="防火墙配置与运维：传统防火墙与下一代防火墙(NGFW)区别、路由/透明/混合模式、安全策略、NAT/VPN/IPS，及国内主流厂商。"><title>防火墙专项：传统与下一代防火墙（NGFW）</title><link rel=canonical href=https://souljian.cn/p/751088086/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="防火墙专项：传统与下一代防火墙（NGFW）"><meta property='og:description' content="防火墙配置与运维：传统防火墙与下一代防火墙(NGFW)区别、路由/透明/混合模式、安全策略、NAT/VPN/IPS，及国内主流厂商。"><meta property='og:url' content='https://souljian.cn/p/751088086/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='防火墙'><meta property='article:tag' content='安全运维'><meta property='article:tag' content='安全设备'><meta property='article:tag' content='NGFW'><meta property='article:tag' content='网络基础'><meta property='article:published_time' content='2026-08-29T22:10:00+08:00'><meta property='article:modified_time' content='2026-08-29T22:10:00+08:00'><meta name=twitter:title content="防火墙专项：传统与下一代防火墙（NGFW）"><meta name=twitter:description content="防火墙配置与运维：传统防火墙与下一代防火墙(NGFW)区别、路由/透明/混合模式、安全策略、NAT/VPN/IPS，及国内主流厂商。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="蜜罐部署实战：T-Pot/Dionaea/Cowrie 部署、流量诱捕、攻击行为分析、蜜罐识别与蜜罐欺骗防御，含拓扑图与案例。"><title>蜜罐专项：部署、识别与对抗</title><link rel=canonical href=https://souljian.cn/p/751088086/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="蜜罐专项：部署、识别与对抗"><meta property='og:description' content="蜜罐部署实战：T-Pot/Dionaea/Cowrie 部署、流量诱捕、攻击行为分析、蜜罐识别与蜜罐欺骗防御，含拓扑图与案例。"><meta property='og:url' content='https://souljian.cn/p/751088086/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='蜜罐'><meta property='article:tag' content='欺骗防御'><meta property='article:tag' content='T-Pot'><meta property='article:tag' content='Cowrie'><meta property='article:tag' content='安全运维'><meta property='article:published_time' content='2026-08-29T15:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="蜜罐专项：部署、识别与对抗"><meta name=twitter:description content="蜜罐部署实战：T-Pot/Dionaea/Cowrie 部署、流量诱捕、攻击行为分析、蜜罐识别与蜜罐欺骗防御，含拓扑图与案例。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一防火墙是干什么的>一、防火墙是干什么的</a></li><li><a href=#二传统防火墙-vs-下一代防火墙>二、传统防火墙 vs 下一代防火墙</a></li><li><a href=#三ngfw-的工作模式>三、NGFW 的工作模式</a><ol><li><a href=#1-路由模式>1. 路由模式</a></li><li><a href=#2-透明模式桥接透明桥>2. 透明模式（桥接/透明桥）</a></li><li><a href=#3-混合模式>3. 混合模式</a></li><li><a href=#4-旁路模式>4. 旁路模式</a></li></ol></li><li><a href=#四部署方式>四、部署方式</a></li><li><a href=#五安全策略怎么做>五、安全策略怎么做</a></li><li><a href=#六ngfw-常用功能>六、NGFW 常用功能</a></li><li><a href=#七国内主流厂商>七、国内主流厂商</a></li><li><a href=#八常见问题与运维>八、常见问题与运维</a></li><li><a href=#九检测与加固安全视角>九、检测与加固（安全视角）</a></li><li><a href=#部署与操作步骤>部署与操作步骤</a></li><li><a href=#影响与适用>影响与适用</a></li><li><a href=#十小结>十、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088086/>防火墙专项：传统与下一代防火墙（NGFW）</a></h2><h3 class=article-subtitle>防火墙配置与运维：传统防火墙与下一代防火墙(NGFW)区别、路由/透明/混合模式、安全策略、NAT/VPN/IPS，及国内主流厂商。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published datetime=2026-08-29T22:10:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>本文介绍防火墙的配置与运维，用于授权环境与自建网络。不要对非授权网络做策略绕过或探测。</p><h2 id=一防火墙是干什么的>一、防火墙是干什么的</h2><p>防火墙是网络边界的第一道门，按策略放行/阻断流量。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>核心：基于“区域 + 策略”控制进出流量
-</span></span></code></pre></td></tr></table></div></div><p>传统防火墙看“五元组”，下一代防火墙看得更多。</p><img src=/img/fw-boundary.svg alt=防火墙边界部署图><h2 id=二传统防火墙-vs-下一代防火墙>二、传统防火墙 vs 下一代防火墙</h2><div class=table-wrapper><table><thead><tr><th>维度</th><th>传统防火墙</th><th>下一代防火墙（NGFW）</th></tr></thead><tbody><tr><td>识别</td><td>IP/端口/协议</td><td>应用、用户、URL</td></tr><tr><td>防御</td><td>包过滤/状态检测</td><td>应用识别 + IPS + 防病毒 + 情报</td></tr><tr><td>联动</td><td>少</td><td>与威胁情报/沙箱/EDR 联动</td></tr></tbody></table></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>NGFW 核心：按“应用+用户”做策略，而不是只按端口
-</span></span></code></pre></td></tr></table></div></div><h2 id=三ngfw-的工作模式>三、NGFW 的工作模式</h2><img src=/img/fw-modes.svg alt=路由模式与透明模式对比图><h3 id=1-路由模式>1. 路由模式</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>防火墙接口配置 IP，作为三层设备
-</span></span><span class=line><span class=cl>流量按路由表/策略转发
-</span></span><span class=line><span class=cl>适合重新规划网络边界
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-透明模式桥接透明桥>2. 透明模式（桥接/透明桥）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>防火墙像二层交换机一样透明串接
-</span></span><span class=line><span class=cl>不改现有 IP 规划，接口通常无业务 IP
-</span></span><span class=line><span class=cl>适合“不改变网络、只想插一道墙”
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-混合模式>3. 混合模式</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>部分接口路由、部分接口透明，按需组合
-</span></span><span class=line><span class=cl>常见于复杂网络
-</span></span></code></pre></td></tr></table></div></div><h3 id=4-旁路模式>4. 旁路模式</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>通过镜像流量旁路分析（不做阻断）
-</span></span><span class=line><span class=cl>常用于 IDS/探针，或取证分析
-</span></span></code></pre></td></tr></table></div></div><h2 id=四部署方式>四、部署方式</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>透明串接：不改变拓扑，串在链路上
-</span></span><span class=line><span class=cl>路由接入：作为边界网关
-</span></span><span class=line><span class=cl>旁路：镜像流量检测（只告警）
-</span></span><span class=line><span class=cl>HA 双机：主备热备，保证可用性
-</span></span></code></pre></td></tr></table></div></div><h2 id=五安全策略怎么做>五、安全策略怎么做</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>原则：默认拒绝，按需放行
-</span></span><span class=line><span class=cl>策略元素：源/目的、应用、用户、动作、时间
-</span></span><span class=line><span class=cl>常用场景：
-</span></span><span class=line><span class=cl>  内网→外网：只放行必要应用
-</span></span><span class=line><span class=cl>  外网→内网：只放行对外服务（Web/DNS）
-</span></span><span class=line><span class=cl>  DMZ 隔离：对外服务放 DMZ，不与内网直连
-</span></span></code></pre></td></tr></table></div></div><h2 id=六ngfw-常用功能>六、NGFW 常用功能</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一什么是蜜罐>一、什么是蜜罐</a></li><li><a href=#二蜜罐部署拓扑图>二、蜜罐部署拓扑图</a></li><li><a href=#三蜜罐分类>三、蜜罐分类</a></li><li><a href=#四部署实战>四、部署实战</a><ol><li><a href=#t-pot推荐多功能>T-Pot（推荐，多功能）</a></li><li><a href=#dionaea低交互模拟多种协议>Dionaea（低交互，模拟多种协议）</a></li><li><a href=#cowriesshtelnet-高交互>Cowrie（SSH/Telnet 高交互）</a></li></ol></li><li><a href=#五检测与分析>五、检测与分析</a></li><li><a href=#六蜜罐识别>六、蜜罐识别</a></li><li><a href=#七防御>七、防御</a></li><li><a href=#八报告中的正确写法>八、报告中的正确写法</a></li><li><a href=#九小结>九、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088086/>蜜罐专项：部署、识别与对抗</a></h2><h3 class=article-subtitle>蜜罐部署实战：T-Pot/Dionaea/Cowrie 部署、流量诱捕、攻击行为分析、蜜罐识别与蜜罐欺骗防御，含拓扑图与案例。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2026-08-29T15:00:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>蜜罐部署只用于授权环境。对非授权网络部署蜜罐可能涉及法律风险。</p><h2 id=一什么是蜜罐>一、什么是蜜罐</h2><p>蜜罐（Honeypot）是一个故意暴露的"诱饵系统"，不包含真实业务，专门用来诱捕攻击者。攻击者一旦上钩，所有操作都会被记录和溯源。</p><h2 id=二蜜罐部署拓扑图>二、蜜罐部署拓扑图</h2><img src=/img/honeypot-deploy.svg alt=蜜罐部署拓扑图><h2 id=三蜜罐分类>三、蜜罐分类</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
 </span><span class=lnt>7
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>应用识别与控制
-</span></span><span class=line><span class=cl>URL 过滤
-</span></span><span class=line><span class=cl>入侵防御（内置 IPS）
-</span></span><span class=line><span class=cl>防病毒/防恶意文件
-</span></span><span class=line><span class=cl>IPsec VPN / SSL VPN
-</span></span><span class=line><span class=cl>威胁情报联动
-</span></span><span class=line><span class=cl>日志审计
-</span></span></code></pre></td></tr></table></div></div><h2 id=七国内主流厂商>七、国内主流厂商</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>┌──────────────┬────────────────────────────────────────────┐
+</span></span><span class=line><span class=cl>│  类型        │  说明                                      │
+</span></span><span class=line><span class=cl>├──────────────┼────────────────────────────────────────────┤
+</span></span><span class=line><span class=cl>│ 低交互蜜罐   │ 模拟协议但不提供真实服务（如 DIONAEA）      │
+</span></span><span class=line><span class=cl>│ 高交互蜜罐   │ 真实操作系统，允许攻击者完整操作（如 Cowrie）│
+</span></span><span class=line><span class=cl>│ 中交互蜜罐   │ 介于两者之间（如 T-Pot）                    │
+</span></span><span class=line><span class=cl>└──────────────┴────────────────────────────────────────────┘
+</span></span></code></pre></td></tr></table></div></div><h2 id=四部署实战>四、部署实战</h2><h3 id=t-pot推荐多功能>T-Pot（推荐，多功能）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 使用 Docker 部署 T-Pot</span>
+</span></span><span class=line><span class=cl>sudo docker run -d <span class=se>\
+</span></span></span><span class=line><span class=cl>  --name<span class=o>=</span>tpot <span class=se>\
+</span></span></span><span class=line><span class=cl>  -v /opt/tpot-data:/opt/tpot-data <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 21:21 -p 22:22 -p 23:23 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 25:25 -p 53:53/udp <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 80:80 -p 110:110 -p 143:143 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 443:443 -p 993:993 -p 995:995 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 1433:1433 -p 3306:3306 -p 3389:3389 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 5432:5432 -p 5900:5900 -p 6379:6379 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 8080:8080 -p 8443:8443 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 8888:8888 -p 27017:27017 <span class=se>\
+</span></span></span><span class=line><span class=cl>  -p 9200:9200 <span class=se>\
+</span></span></span><span class=line><span class=cl>  --privileged <span class=se>\
+</span></span></span><span class=line><span class=cl>  --restart<span class=o>=</span>always <span class=se>\
+</span></span></span><span class=line><span class=cl>  tpot/honeypot:latest
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>T-Pot 集成了 Cowrie（SSH/ Telnet）、ConPot（SCADA）、Dionaea（多种协议）
+</span></span><span class=line><span class=cl>默认模拟 30+ 种服务，自动记录攻击行为
+</span></span></code></pre></td></tr></table></div></div><h3 id=dionaea低交互模拟多种协议>Dionaea（低交互，模拟多种协议）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>华为、深信服、奇安信（网神）、山石网科、天融信、
-</span></span><span class=line><span class=cl>H3C、启明星辰、绿盟
-</span></span><span class=line><span class=cl>（国外：Fortinet、PaloAlto、Cisco 等）
-</span></span></code></pre></td></tr></table></div></div><h2 id=八常见问题与运维>八、常见问题与运维</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo apt install dionaea
+</span></span><span class=line><span class=cl>sudo vim /etc/dionaea/dionaea.conf
+</span></span><span class=line><span class=cl>sudo systemctl start dionaea
+</span></span></code></pre></td></tr></table></div></div><h3 id=cowriesshtelnet-高交互>Cowrie（SSH/Telnet 高交互）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>策略太多太乱 → 定期梳理收敛
-</span></span><span class=line><span class=cl>默认放行 all → 违反最小权限
-</span></span><span class=line><span class=cl>规则没看日志 → 误放行未发现
-</span></span><span class=line><span class=cl>双机没配好 → 单点故障
-</span></span><span class=line><span class=cl>日志不审计 → 出了事没证据
-</span></span></code></pre></td></tr></table></div></div><h2 id=九检测与加固安全视角>九、检测与加固（安全视角）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>检查是否有宽泛放行策略（any-any）
-</span></span><span class=line><span class=cl>检查默认口令、远程管理暴露
-</span></span><span class=line><span class=cl>定期审计策略与日志
-</span></span><span class=line><span class=cl>更新特征库与情报
-</span></span></code></pre></td></tr></table></div></div><h2 id=部署与操作步骤>部署与操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git clone https://github.com/cowrie/cowrie.git
+</span></span><span class=line><span class=cl><span class=nb>cd</span> cowrie
+</span></span><span class=line><span class=cl>pip install -r requirements.txt
+</span></span><span class=line><span class=cl>cp cowrie.cfg.dist cowrie.cfg
+</span></span><span class=line><span class=cl>sudo ./bin/cowrie start
+</span></span></code></pre></td></tr></table></div></div><h2 id=五检测与分析>五、检测与分析</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：确认模式（路由 / 透明 / 混合），决定放哪
-</span></span><span class=line><span class=cl>第 2 步：按模式配置接口（路由配 IP；透明走桥接）
-</span></span><span class=line><span class=cl>第 3 步：划分安全区域（外网 / 内网 / DMZ）
-</span></span><span class=line><span class=cl>第 4 步：写安全策略（默认拒绝，按需放行）
-</span></span><span class=line><span class=cl>第 5 步：开启 NGFW 功能（IPS / 防病毒 / URL / VPN）
-</span></span><span class=line><span class=cl>第 6 步：验证连通性与策略，配置 HA 与日志审计
-</span></span></code></pre></td></tr></table></div></div><h2 id=影响与适用>影响与适用</h2><p>防火墙是网络边界第一道门，模式与策略是否合理决定了隔离效果。</p><h2 id=十小结>十、小结</h2><p>防火墙的关键是“<strong>模式选对 + 策略收敛 + 功能用全</strong>”。NGFW 把 IPS/防病毒/VPN/情报揉进一台设备，但再强的墙也架不住 any-any 的策略。理解路由/透明/混合三种模式，才能把它放对位置。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E9%98%B2%E7%81%AB%E5%A2%99/>防火墙</a>
-<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a>
-<a href=/tags/%E5%AE%89%E5%85%A8%E8%AE%BE%E5%A4%87/>安全设备</a>
-<a href=/tags/ngfw/>NGFW</a>
-<a href=/tags/%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/>网络基础</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088091/><div class=article-details><h2 class=article-title>蜜罐专项：部署、识别与对抗</h2></div></a></article><article><a href=/p/751088090/><div class=article-details><h2 class=article-title>EDR 专项：终端检测与响应</h2></div></a></article><article><a href=/p/751088089/><div class=article-details><h2 class=article-title>态势感知专项：平台功能与厂商对比</h2></div></a></article><article><a href=/p/751088088/><div class=article-details><h2 class=article-title>堡垒机专项：运维审计与特权访问管理</h2></div></a></article><article><a href=/p/751088087/><div class=article-details><h2 class=article-title>IPS / IDS 专项：入侵检测与防御</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>T-Pot Web 界面：http://蜜罐IP:3000
+</span></span><span class=line><span class=cl>查看：
+</span></span><span class=line><span class=cl>  • 攻击来源 IP
+</span></span><span class=line><span class=cl>  • 登录尝试记录
+</span></span><span class=line><span class=cl>  • 命令执行记录
+</span></span><span class=line><span class=cl>  • 文件下载记录（攻击者上传的工具/脚本）
+</span></span><span class=line><span class=cl>  • SSH 爆破账号密码统计
+</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>分析维度：
+</span></span><span class=line><span class=cl>1. 攻击源 IP 归属地（国家/城市）
+</span></span><span class=line><span class=cl>2. 常用登录账号（root/admin/1234）
+</span></span><span class=line><span class=cl>3. 常用密码组合
+</span></span><span class=line><span class=cl>4. 攻击时间规律（是否 24 小时不间断）
+</span></span><span class=line><span class=cl>5. 攻击工具特征（上传的文件/执行的命令）
+</span></span><span class=line><span class=cl>6. C2 域名/IP（攻击者使用的远程控制）
+</span></span></code></pre></td></tr></table></div></div><h2 id=六蜜罐识别>六、蜜罐识别</h2><p>攻击者也会识别蜜罐，常用方法：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. SSH 服务信息：蜜罐 SSH banner 与真实系统不同
+</span></span><span class=line><span class=cl>2. 文件内容：蜜罐 /etc/passwd 等文件内容与真实不同
+</span></span><span class=line><span class=cl>3. 网络延迟：蜜罐延迟异常
+</span></span><span class=line><span class=cl>4. 系统信息：蜜罐 uname 信息与真实不同
+</span></span><span class=line><span class=cl>5. 命令输出：蜜罐执行命令的输出可能不一致
+</span></span><span class=line><span class=cl>6. ARP/MAC 地址：蜜罐 MAC 地址与品牌不匹配
+</span></span></code></pre></td></tr></table></div></div><h2 id=七防御>七、防御</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 真实蜜罐（高交互）需与普通服务器混部，不可集中在一个网段
+</span></span><span class=line><span class=cl>2. 蜜罐 IP 加入黑名单后自动封禁
+</span></span><span class=line><span class=cl>3. 蜜罐数据接入 SIEM 做实时告警
+</span></span><span class=line><span class=cl>4. 蜜罐作为&#34;金丝雀&#34;：蜜罐有流量 = 有人在打
+</span></span></code></pre></td></tr></table></div></div><h2 id=八报告中的正确写法>八、报告中的正确写法</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>发现：内部网络存在 IP 10.0.0.50 对外暴露 SSH/HTTP 等端口，但无业务记录。经排查为蜜罐诱饵。
+</span></span><span class=line><span class=cl>蜜罐在 24 小时内记录了来自 1500+ 个 IP 的攻击尝试，主要为 SSH 爆破（90%）和 Web 扫描（10%）。
+</span></span><span class=line><span class=cl>建议：将蜜罐数据接入 SIEM 做实时告警；对高频攻击源 IP 做自动封禁。
+</span></span></code></pre></td></tr></table></div></div><h2 id=九小结>九、小结</h2><p>蜜罐是"攻守兼备"的武器——既是攻击者的陷阱，也是防御者的情报源。核心是选择合适类型的蜜罐 + 合理部署位置 + 数据分析驱动安全策略。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E8%9C%9C%E7%BD%90/>蜜罐</a>
+<a href=/tags/%E6%AC%BA%E9%AA%97%E9%98%B2%E5%BE%A1/>欺骗防御</a>
+<a href=/tags/t-pot/>T-Pot</a>
+<a href=/tags/cowrie/>Cowrie</a>
+<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088112/><div class=article-details><h2 class=article-title>护网 / 重保经验总结</h2></div></a></article><article><a href=/p/751088103/><div class=article-details><h2 class=article-title>Docker 与 Kubernetes 云安全实战</h2></div></a></article><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>应急响应处置与事件溯源实战</h2></div></a></article><article><a href=/p/751088089/><div class=article-details><h2 class=article-title>态势感知专项：平台功能与厂商对比</h2></div></a></article><article><a href=/p/751088087/><div class=article-details><h2 class=article-title>IPS / IDS 专项：入侵检测与防御</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

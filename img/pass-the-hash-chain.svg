@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" width="100%" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr-p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arr-p2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2980b9"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="560" fill="#f8fafc" rx="10"/>
+  <text x="40" y="42" font-size="22" font-weight="bold" fill="#111">Pass-the-Hash 横向移动攻击链</text>
+  <text x="40" y="64" font-size="14" fill="#666">获取 NT hash → 模拟认证 → 横向移动到目标主机（无需明文密码）</text>
+
+  <line x1="500" y1="80" x2="500" y2="420" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="400" y="98" font-size="14" font-weight="bold" fill="#555">攻击侧</text>
+  <text x="570" y="98" font-size="14" font-weight="bold" fill="#555">目标域</text>
+
+  <!-- 攻击者 -->
+  <rect x="30" y="150" width="180" height="100" rx="12" fill="#fee2e2" stroke="#c0392b" stroke-width="2.5"/>
+  <text x="120" y="185" font-size="17" text-anchor="middle" fill="#111" font-weight="bold">🕵️ 攻击者</text>
+  <text x="120" y="210" font-size="13" text-anchor="middle" fill="#555">已获取 NT hash</text>
+  <text x="120" y="228" font-size="12" text-anchor="middle" fill="#555">如从注册表/hashdump</text>
+
+  <rect x="540" y="150" width="180" height="100" rx="12" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+  <text x="630" y="185" font-size="17" text-anchor="middle" fill="#111" font-weight="bold">🖥️ 目标主机 A</text>
+  <text x="630" y="210" font-size="13" text-anchor="middle" fill="#555">已用该 hash 登录</text>
+  <text x="630" y="228" font-size="12" text-anchor="middle" fill="#555">当前 session</text>
+
+  <rect x="780" y="150" width="180" height="100" rx="12" fill="#fef9c3" stroke="#b45309" stroke-width="2"/>
+  <text x="870" y="185" font-size="17" text-anchor="middle" fill="#111" font-weight="bold">🖥️ 目标主机 B</text>
+  <text x="870" y="210" font-size="13" text-anchor="middle" fill="#555">同一域用户</text>
+  <text x="870" y="228" font-size="12" text-anchor="middle" fill="#555">使用相同密码</text>
+
+  <rect x="990" y="150" width="160" height="100" rx="12" fill="#fce4ec" stroke="#ad1457" stroke-width="2"/>
+  <text x="1070" y="185" font-size="17" text-anchor="middle" fill="#111" font-weight="bold">🏛️ 域控制器</text>
+  <text x="1070" y="210" font-size="13" text-anchor="middle" fill="#555">DC</text>
+
+  <!-- 步骤箭头 -->
+  <path d="M 210 200 C 350 130, 420 100, 530 180" stroke="#c0392b" stroke-width="3" fill="none" marker-end="url(#arr-p1)"/>
+  <text x="370" y="115" font-size="12" fill="#c0392b" text-anchor="middle" font-weight="bold">1. 用 NT hash 模拟认证</text>
+
+  <path d="M 210 220 C 350 250, 420 250, 530 220" stroke="#c0392b" stroke-width="2.5" fill="none" marker-end="url(#arr-p1)"/>
+  <text x="370" y="265" font-size="11" fill="#c0392b" text-anchor="middle">SMB / WMI / psexec 直连</text>
+
+  <path d="M 720 200 C 800 130, 900 130, 970 180" stroke="#2980b9" stroke-width="3" fill="none" marker-end="url(#arr-p2)"/>
+  <text x="840" y="115" font-size="12" fill="#2980b9" text-anchor="middle" font-weight="bold">2. 用同一 hash 打主机 B</text>
+
+  <path d="M 720 220 C 800 250, 900 250, 970 220" stroke="#2980b9" stroke-width="2.5" fill="none" marker-end="url(#arr-p2)"/>
+  <text x="840" y="265" font-size="11" fill="#2980b9" text-anchor="middle">SMB + Pass-the-Hash</text>
+
+  <path d="M 1150 200 C 1100 350, 700 400, 210 230" stroke="#ad1457" stroke-width="2" stroke-dasharray="5,3" fill="none" marker-end="url(#arr-p1)"/>
+  <text x="680" y="410" font-size="12" fill="#ad1457" text-anchor="middle" font-weight="bold">⚠️ hash 在域内可传递！一个 hash 打遍同域所有主机</text>
+
+  <rect x="30" y="310" width="1140" height="220" rx="10" fill="#ffffff" stroke="#ddd" stroke-width="1"/>
+  <text x="50" y="340" font-size="16" font-weight="bold" fill="#111">攻击方式</text>
+
+  <text x="50" y="370" font-size="14" font-weight="bold" fill="#c0392b">方法1：psexec（SMB + Pass-the-Hash）</text>
+  <text x="340" y="370" font-size="13" fill="#333">psexec.py 域/用户@目标IP -hashes :NT_HASH</text>
+
+  <text x="50" y="395" font-size="14" font-weight="bold" fill="#2980b9">方法2：WMI（无需落地工具）</text>
+  <text x="340" y="395" font-size="13" fill="#333">wmiexec.py 域/用户@目标IP -hashes :NT_HASH</text>
+
+  <text x="50" y="420" font-size="14" font-weight="bold" fill="#27ae60">方法3：RDP（需 Win10 1809+）</text>
+  <text x="340" y="420" font-size="13" fill="#333">mimikatz 模拟登录 → mstsc 直连</text>
+
+  <text x="50" y="450" font-size="16" font-weight="bold" fill="#111">为什么危险？</text>
+  <text x="220" y="450" font-size="13" fill="#333">域内同一用户的 NT hash 相同 → 获取一台主机的 hash = 获取同域所有主机访问权限</text>
+
+  <text x="50" y="480" font-size="16" font-weight="bold" fill="#111">防御</text>
+  <text x="220" y="480" font-size="13" fill="#333">启用 Credential Guard（虚拟隔离 LSASS）/ 限制 SMB 直连（网络层 ACL）/ 部署 EDR</text>
+  <text x="220" y="500" font-size="13" fill="#555">Windows 10 1809+ 默认不再支持用 NT hash 直接做 NTLM 认证（需破解或重设密码）</text>
+</svg>
