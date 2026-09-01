@@ -55,7 +55,48 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
-&lt;/h2&gt;&lt;p&gt;Jenkins 未授权 = 服务器 RCE。防御核心是&lt;strong&gt;认证 + 网络隔离 + CSRF 防护&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>Redis未授权访问原理与防御</title><link>https://souljian.cn/p/751088136/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088136/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;Jenkins 未授权 = 服务器 RCE。防御核心是&lt;strong&gt;认证 + 网络隔离 + CSRF 防护&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>Nacos漏洞利用实战</title><link>https://souljian.cn/p/751088193/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088193/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;Nacos 攻击只在授权测试环境进行。&lt;/p&gt;
+&lt;h2 id="一nacos-攻击链"&gt;一、Nacos 攻击链
+&lt;/h2&gt;&lt;img src="https://souljian.cn/img/nacos-vuln-chain.svg" alt="Nacos 漏洞利用链" /&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;① 未授权访问 → ② 添加用户 → ③ 任意文件读写 → ④ 内存马 → ⑤ RCE
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="二利用步骤"&gt;二、利用步骤
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;未授权：直接访问 /nacos/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;添加用户：POST /v1/auth/users
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;任意文件读写：PUT /v1/cs/configs
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;内存马：利用 Tomcat 执行内存 WebShell
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="三防御加固"&gt;三、防御加固
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;升级到 Nacos 2.x+
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;开启鉴权（auth.enabled=true）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;不暴露公网
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
+&lt;/h2&gt;&lt;p&gt;Nacos 未授权 + 任意文件读写 = RCE。防御核心是&lt;strong&gt;开启鉴权 + 升级到 2.x+&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>Redis未授权访问原理与防御</title><link>https://souljian.cn/p/751088136/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088136/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;Redis 攻击只在授权测试环境进行。对非授权 Redis 实例进行攻击可能触犯法律。&lt;/p&gt;
 &lt;h2 id="一redis-未授权利用链"&gt;一、Redis 未授权利用链
 &lt;/h2&gt;&lt;img src="https://souljian.cn/img/redis-unauth-chain.svg" alt="Redis 未授权访问到 GetShell" /&gt;

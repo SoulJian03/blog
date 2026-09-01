@@ -265,206 +265,50 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="五小结"&gt;五、小结
-&lt;/h2&gt;&lt;p&gt;sqlmap 是 SQL 注入自动化的核心工具。&lt;code&gt;--batch&lt;/code&gt; 实现全自动扫描，&lt;code&gt;--level&lt;/code&gt; 控制注入检测深度，&lt;code&gt;--tamper&lt;/code&gt; 应对 WAF 防护。&lt;/p&gt;</description></item><item><title>SQL注入原理与防御</title><link>https://souljian.cn/p/751088108/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088108/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
-&lt;/h2&gt;&lt;p&gt;SQL 注入测试只在授权环境进行。对非授权系统执行注入可能触犯法律。&lt;/p&gt;
-&lt;h2 id="一原理"&gt;一、原理
-&lt;/h2&gt;&lt;p&gt;SQL 注入的本质是：用户输入拼接到 SQL 语句中，被数据库当作 SQL 语法执行。&lt;/p&gt;
+&lt;/h2&gt;&lt;p&gt;sqlmap 是 SQL 注入自动化的核心工具。&lt;code&gt;--batch&lt;/code&gt; 实现全自动扫描，&lt;code&gt;--level&lt;/code&gt; 控制注入检测深度，&lt;code&gt;--tamper&lt;/code&gt; 应对 WAF 防护。&lt;/p&gt;</description></item><item><title>SQL注入原理与防御</title><link>https://souljian.cn/p/751088190/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088190/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;SQL 注入测试只在授权测试环境进行。&lt;/p&gt;
+&lt;h2 id="一sql-注入攻击链"&gt;一、SQL 注入攻击链
+&lt;/h2&gt;&lt;img src="https://souljian.cn/img/sql-injection-chain.svg" alt="SQL 注入攻击链" /&gt;
 &lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;span class="lnt"&gt;6
-&lt;/span&gt;&lt;span class="lnt"&gt;7
-&lt;/span&gt;&lt;span class="lnt"&gt;8
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;正常代码：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; SELECT * FROM users WHERE id = &amp;#39;&amp;#34; + input + &amp;#34;&amp;#39;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;输入 1 变成：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; SELECT * FROM users WHERE id = &amp;#39;1&amp;#39; -- 正常
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;输入 1&amp;#39; OR &amp;#39;1&amp;#39;=&amp;#39;1 变成：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; SELECT * FROM users WHERE id = &amp;#39;1&amp;#39; OR &amp;#39;1&amp;#39;=&amp;#39;1&amp;#39; -- 注入成功，返回所有数据
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;① 发现注入点 → ② 判断注入类型 → ③ 获取数据库信息 → ④ 读取数据 → ⑤ 写文件/执行命令
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h2 id="二sql-注入攻击链"&gt;二、SQL 注入攻击链
-&lt;/h2&gt;&lt;img src="https://souljian.cn/img/sql-injection-chain.svg" alt="SQL 注入攻击链拓扑图" /&gt;
-&lt;h2 id="三四种注入类型"&gt;三、四种注入类型
-&lt;/h2&gt;&lt;h3 id="1-联合查询注入"&gt;1. 联合查询注入
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;span class="lnt"&gt;6
-&lt;/span&gt;&lt;span class="lnt"&gt;7
-&lt;/span&gt;&lt;span class="lnt"&gt;8
-&lt;/span&gt;&lt;span class="lnt"&gt;9
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;条件：页面有回显位置
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; UNION SELECT 1,2,3,4,5 --+
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;步骤：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 第 1 步：判断注入点（加单引号看报错）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 第 2 步：判断列数（ORDER BY 4 不报错，ORDER BY 5 报错 → 4 列）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 第 3 步：确定回显位置（UNION SELECT 1,2,3,4 → 看哪个位置显示数字）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 第 4 步：查表结构（UNION SELECT 1,table_name,3,4 FROM information_schema.tables）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 第 5 步：查数据（UNION SELECT 1,username,password,4 FROM users）
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h3 id="2-报错注入"&gt;2. 报错注入
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;条件：页面报错但无回显
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; AND (SELECT 1 FROM (SELECT COUNT(*),CONCAT((SELECT password FROM users LIMIT 1),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--+
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;常用函数：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; floor() / extractvalue() / updatexml()
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h3 id="3-布尔盲注"&gt;3. 布尔盲注
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;span class="lnt"&gt;6
-&lt;/span&gt;&lt;span class="lnt"&gt;7
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;条件：页面 True/False 不同
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; AND 1=1 --+ （页面正常）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; AND 1=2 --+ （页面异常）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;利用：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &amp;#39; AND LENGTH((SELECT password FROM users LIMIT 1))&amp;gt;5 --+
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 逐字符判断密码长度和内容
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h3 id="4-时间盲注"&gt;4. 时间盲注
-&lt;/h3&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
-&lt;/span&gt;&lt;span class="lnt"&gt;2
-&lt;/span&gt;&lt;span class="lnt"&gt;3
-&lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;span class="lnt"&gt;6
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;条件：页面没有任何变化
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; AND SLEEP(5) --+ （等待 5 秒 → 存在注入）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Payload：&amp;#39; AND IF(1=1,SLEEP(5),0) --+
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;常用函数：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; sleep() / BENCHMARK() / pg_sleep()
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h2 id="四危害"&gt;四、危害
+&lt;/div&gt;&lt;h2 id="二注入类型"&gt;二、注入类型
 &lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
 &lt;/span&gt;&lt;span class="lnt"&gt;2
 &lt;/span&gt;&lt;span class="lnt"&gt;3
 &lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数据泄露（用户密码/个人信息）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数据篡改（修改订单/余额）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数据删除
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Getshell（MySQL 5.x + 绝对路径 → INTO OUTFILE）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数据库横向（内网连接其他数据库）
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数字注入：id=1 UNION SELECT...
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;字符注入：name=&amp;#39; UNION SELECT...
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;布尔盲注：id=1 AND 1=1 / AND 1=2
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;时间盲注：id=1 AND SLEEP(5)
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h2 id="五检测方法"&gt;五、检测方法
+&lt;/div&gt;&lt;h2 id="三防御加固"&gt;三、防御加固
 &lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
 &lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
 &lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
 &lt;/span&gt;&lt;span class="lnt"&gt;2
 &lt;/span&gt;&lt;span class="lnt"&gt;3
 &lt;/span&gt;&lt;span class="lnt"&gt;4
-&lt;/span&gt;&lt;span class="lnt"&gt;5
-&lt;/span&gt;&lt;span class="lnt"&gt;6
-&lt;/span&gt;&lt;span class="lnt"&gt;7
-&lt;/span&gt;&lt;span class="lnt"&gt;8
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
 &lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;手工检测：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; &amp;#39; 单引号 → 报错 = 存在注入
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; AND 1=1 / AND 1=2 → 页面变化 = 布尔注入
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; SLEEP(5) → 延迟 = 时间注入
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;自动化工具：
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; sqlmap -u &amp;#34;http://target/page?id=1&amp;#34;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; sqlmap -r request.txt --dbs --tables --dump
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;参数化查询（预处理语句）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ORM 框架（Hibernate/MyBatis）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;WAF 规则拦截
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;最小权限原则
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h2 id="六防御措施"&gt;六、防御措施
-&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
-&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt; 1
-&lt;/span&gt;&lt;span class="lnt"&gt; 2
-&lt;/span&gt;&lt;span class="lnt"&gt; 3
-&lt;/span&gt;&lt;span class="lnt"&gt; 4
-&lt;/span&gt;&lt;span class="lnt"&gt; 5
-&lt;/span&gt;&lt;span class="lnt"&gt; 6
-&lt;/span&gt;&lt;span class="lnt"&gt; 7
-&lt;/span&gt;&lt;span class="lnt"&gt; 8
-&lt;/span&gt;&lt;span class="lnt"&gt; 9
-&lt;/span&gt;&lt;span class="lnt"&gt;10
-&lt;/span&gt;&lt;span class="lnt"&gt;11
-&lt;/span&gt;&lt;span class="lnt"&gt;12
-&lt;/span&gt;&lt;span class="lnt"&gt;13
-&lt;/span&gt;&lt;span class="lnt"&gt;14
-&lt;/span&gt;&lt;span class="lnt"&gt;15
-&lt;/span&gt;&lt;span class="lnt"&gt;16
-&lt;/span&gt;&lt;span class="lnt"&gt;17
-&lt;/span&gt;&lt;span class="lnt"&gt;18
-&lt;/span&gt;&lt;span class="lnt"&gt;19
-&lt;/span&gt;&lt;span class="lnt"&gt;20
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
-&lt;td class="lntd"&gt;
-&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;1. 预编译语句（核心防御）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; PHP: $pdo-&amp;gt;prepare(&amp;#34;SELECT * FROM users WHERE id=?&amp;#34;)
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Java: PreparedStatement
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Python: cursor.execute(&amp;#34;SELECT * FROM users WHERE id=%s&amp;#34;, (id,))
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;2. 最小权限原则
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; Web 数据库账号只给 SELECT 权限
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 禁止 FILE / SYSTEM / SHUTDOWN 权限
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;3. WAF + 输入校验
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 过滤特殊字符：&amp;#39; &amp;#34; ; -- / \
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 参数类型验证（数字 ID 必须是整数）
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;4. 错误信息隐藏
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 关闭 MySQL 详细错误回显
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 自定义 404/500 页面
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;5. 数据库审计
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 开启 general_log / slow_query_log
-&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt; 监控异常查询
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;h2 id="七小结"&gt;七、小结
-&lt;/h2&gt;&lt;p&gt;SQL 注入的核心防御就是&lt;strong&gt;预编译语句&lt;/strong&gt;。只要用了 PDO / PreparedStatement，注入基本不可能发生。其余的 WAF/过滤只是第二道防线。&lt;/p&gt;</description></item><item><title>渗透思路：上传/登录窗口/输入框</title><link>https://souljian.cn/p/751088130/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088130/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
+&lt;/h2&gt;&lt;p&gt;SQL 注入的核心是&lt;strong&gt;用户输入被拼接到 SQL 语句中&lt;/strong&gt;。&lt;strong&gt;参数化查询&lt;/strong&gt;是唯一有效的防御。&lt;/p&gt;</description></item><item><title>渗透思路：上传/登录窗口/输入框</title><link>https://souljian.cn/p/751088130/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088130/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;渗透测试只在授权测试环境进行。对非授权系统进行渗透测试可能触犯法律。&lt;/p&gt;
 &lt;h2 id="一三大入口"&gt;一、三大入口
 &lt;/h2&gt;&lt;img src="https://souljian.cn/img/pentest-ideas.svg" alt="渗透思路三大入口" /&gt;

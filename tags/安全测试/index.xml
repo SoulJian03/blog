@@ -419,7 +419,48 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
-&lt;/h2&gt;&lt;p&gt;Kerberoasting 是域渗透中最常见的凭据获取方式。防御核心是&lt;strong&gt;强制启用预认证 + 强密码策略&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>RCE代码执行与命令执行实战</title><link>https://souljian.cn/p/751088128/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088128/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;Kerberoasting 是域渗透中最常见的凭据获取方式。防御核心是&lt;strong&gt;强制启用预认证 + 强密码策略&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>Nacos漏洞利用实战</title><link>https://souljian.cn/p/751088193/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088193/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;Nacos 攻击只在授权测试环境进行。&lt;/p&gt;
+&lt;h2 id="一nacos-攻击链"&gt;一、Nacos 攻击链
+&lt;/h2&gt;&lt;img src="https://souljian.cn/img/nacos-vuln-chain.svg" alt="Nacos 漏洞利用链" /&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;① 未授权访问 → ② 添加用户 → ③ 任意文件读写 → ④ 内存马 → ⑤ RCE
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="二利用步骤"&gt;二、利用步骤
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;未授权：直接访问 /nacos/
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;添加用户：POST /v1/auth/users
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;任意文件读写：PUT /v1/cs/configs
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;内存马：利用 Tomcat 执行内存 WebShell
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="三防御加固"&gt;三、防御加固
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;升级到 Nacos 2.x+
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;开启鉴权（auth.enabled=true）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;不暴露公网
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
+&lt;/h2&gt;&lt;p&gt;Nacos 未授权 + 任意文件读写 = RCE。防御核心是&lt;strong&gt;开启鉴权 + 升级到 2.x+&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>RCE代码执行与命令执行实战</title><link>https://souljian.cn/p/751088128/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088128/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;命令注入攻击只在授权测试环境进行。对非授权系统执行命令注入可能触犯法律。&lt;/p&gt;
 &lt;h2 id="一命令注入原理"&gt;一、命令注入原理
 &lt;/h2&gt;&lt;img src="https://souljian.cn/img/cmd-injection-chain.svg" alt="命令注入原理与防御" /&gt;
@@ -492,7 +533,50 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="六小结"&gt;六、小结
-&lt;/h2&gt;&lt;p&gt;命令注入的本质是&lt;strong&gt;用户输入被当作命令执行&lt;/strong&gt;。防御核心是&lt;strong&gt;使用参数列表而非字符串拼接&lt;/strong&gt;，配合输入过滤和沙箱隔离。&lt;/p&gt;</description></item><item><title>SSRF深入实战：利用面与绕过</title><link>https://souljian.cn/p/751088175/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088175/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;命令注入的本质是&lt;strong&gt;用户输入被当作命令执行&lt;/strong&gt;。防御核心是&lt;strong&gt;使用参数列表而非字符串拼接&lt;/strong&gt;，配合输入过滤和沙箱隔离。&lt;/p&gt;</description></item><item><title>SQL注入原理与防御</title><link>https://souljian.cn/p/751088190/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088190/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;SQL 注入测试只在授权测试环境进行。&lt;/p&gt;
+&lt;h2 id="一sql-注入攻击链"&gt;一、SQL 注入攻击链
+&lt;/h2&gt;&lt;img src="https://souljian.cn/img/sql-injection-chain.svg" alt="SQL 注入攻击链" /&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;① 发现注入点 → ② 判断注入类型 → ③ 获取数据库信息 → ④ 读取数据 → ⑤ 写文件/执行命令
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="二注入类型"&gt;二、注入类型
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;数字注入：id=1 UNION SELECT...
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;字符注入：name=&amp;#39; UNION SELECT...
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;布尔盲注：id=1 AND 1=1 / AND 1=2
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;时间盲注：id=1 AND SLEEP(5)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="三防御加固"&gt;三、防御加固
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;span class="lnt"&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;参数化查询（预处理语句）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;ORM 框架（Hibernate/MyBatis）
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;WAF 规则拦截
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;最小权限原则
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
+&lt;/h2&gt;&lt;p&gt;SQL 注入的核心是&lt;strong&gt;用户输入被拼接到 SQL 语句中&lt;/strong&gt;。&lt;strong&gt;参数化查询&lt;/strong&gt;是唯一有效的防御。&lt;/p&gt;</description></item><item><title>SSRF深入实战：利用面与绕过</title><link>https://souljian.cn/p/751088175/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088175/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;SSRF 攻击只在授权测试环境进行。&lt;/p&gt;
 &lt;h2 id="一ssrf-利用链"&gt;一、SSRF 利用链
 &lt;/h2&gt;&lt;img src="https://souljian.cn/img/ssrf-redis-chain.svg" alt="SSRF 利用面" /&gt;
@@ -1036,7 +1120,44 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
-&lt;/h2&gt;&lt;p&gt;SSRF + Redis 未授权 = GetShell。防御核心是&lt;strong&gt;Redis 加密码 + SSRF 防护&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>目录穿越漏洞实战</title><link>https://souljian.cn/p/751088180/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088180/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;SSRF + Redis 未授权 = GetShell。防御核心是&lt;strong&gt;Redis 加密码 + SSRF 防护&lt;/strong&gt;。&lt;/p&gt;</description></item><item><title>漏洞联动XSS打CSRF账号接管</title><link>https://souljian.cn/p/751088191/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088191/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
+&lt;/h2&gt;&lt;p&gt;XSS/CSRF 测试只在授权测试环境进行。&lt;/p&gt;
+&lt;h2 id="一xss-打-csrf-攻击链"&gt;一、XSS 打 CSRF 攻击链
+&lt;/h2&gt;&lt;img src="https://souljian.cn/img/xss-csrf-chain.svg" alt="XSS 打 CSRF 攻击链" /&gt;
+&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;① XSS → ② 窃取 Session/Cookie → ③ CSRF Token → ④ 账号接管
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="二利用方式"&gt;二、利用方式
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;span class="lnt"&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;XSS → 窃取 Cookie → 伪造登录会话
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;XSS → 窃取 CSRF Token → 发起恶意请求
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;XSS → 篡改页面 → 诱导用户操作
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="三防御加固"&gt;三、防御加固
+&lt;/h2&gt;&lt;div class="highlight"&gt;&lt;div class="chroma"&gt;
+&lt;table class="lntable"&gt;&lt;tr&gt;&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code&gt;&lt;span class="lnt"&gt;1
+&lt;/span&gt;&lt;span class="lnt"&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class="lntd"&gt;
+&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;输出编码 · CSP · HttpOnly Cookie
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;SameSite Cookie · CSRF Token · 二次确认
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id="四小结"&gt;四、小结
+&lt;/h2&gt;&lt;p&gt;XSS + CSRF 是 Web 应用最常见的联动攻击。&lt;strong&gt;HttpOnly Cookie + SameSite + CSP&lt;/strong&gt; 是防御核心。&lt;/p&gt;</description></item><item><title>目录穿越漏洞实战</title><link>https://souljian.cn/p/751088180/</link><pubDate>Sat, 29 Aug 2026 14:00:00 +0800</pubDate><guid>https://souljian.cn/p/751088180/</guid><description>&lt;h2 id="写在前面合法学习边界"&gt;写在前面：合法学习边界
 &lt;/h2&gt;&lt;p&gt;目录穿越测试只在授权测试环境进行。&lt;/p&gt;
 &lt;h2 id="一目录穿越攻击链"&gt;一、目录穿越攻击链
 &lt;/h2&gt;&lt;img src="https://souljian.cn/img/path-traversal-chain.svg" alt="目录穿越攻击链" /&gt;
