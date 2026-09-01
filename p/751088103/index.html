@@ -1,90 +1,125 @@
-<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><title>Docker 与 Kubernetes 云安全实战</title><link rel=canonical href=https://souljian.cn/p/751088103/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="Linux 系统加固清单（最小暴露/最小权限/可审计）"><meta property='og:description' content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><meta property='og:url' content='https://souljian.cn/p/751088103/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Docker'><meta property='article:tag' content='Kubernetes'><meta property='article:tag' content='云安全'><meta property='article:tag' content='容器逃逸'><meta property='article:tag' content='安全运维'><meta property='article:published_time' content='2026-08-30T01:10:00+08:00'><meta property='article:modified_time' content='2026-08-30T01:10:00+08:00'><meta name=twitter:title content="Linux 系统加固清单（最小暴露/最小权限/可审计）"><meta name=twitter:description content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
+<!doctype html><html lang=en-us dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><title>等级保护等保2.0基础（五个等级与合规要点）</title><link rel=canonical href=https://souljian.cn/p/751088103/><link rel=stylesheet href=/scss/style.min.81579ea678e30582aa60028bfe3192821d6c0fee666ee279be318fb5b558916b.css><meta property='og:title' content="Linux 系统加固清单（最小暴露/最小权限/可审计）"><meta property='og:description' content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><meta property='og:url' content='https://souljian.cn/p/751088103/'><meta property='og:site_name' content='SoulJian小站'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='等保'><meta property='article:tag' content='等级保护'><meta property='article:tag' content='合规'><meta property='article:tag' content='安全测评'><meta property='article:tag' content='网络安全'><meta property='article:published_time' content='2026-08-29T14:00:00+08:00'><meta property='article:modified_time' content='2026-08-30T10:00:00+08:00'><meta name=twitter:title content="Linux 系统加固清单（最小暴露/最小权限/可审计）"><meta name=twitter:description content="Linux 系统加固完整清单：账户、SSH、防火墙、日志、权限、更新、服务最小化、sensors 检测与验证步骤。"><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label=切换菜单>
 <span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu_d0e0f681fd935e1f.jpg width=300 height=303 class=site-logo loading=lazy alt=Avatar>
 </a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>SoulJian小站</a></h1><h2 class=site-description>人生所有的痛苦，皆来自于我执</h2></div></header><ol class=menu-social><li><a href=https://github.com/souljian03 target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
 <span>归档</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
 <span>搜索</span></a></li><li><a href=/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
 <span>友情链接</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
 <svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
-<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一原理容器不等于隔离>一、原理：容器不等于隔离</a></li><li><a href=#二影响与危害>二、影响与危害</a></li><li><a href=#三常见利用与验证>三、常见利用与验证</a><ol><li><a href=#1-dockersock-未授权>1. docker.sock 未授权</a></li><li><a href=#2-特权容器逃逸>2. 特权容器逃逸</a></li><li><a href=#3-runc--内核漏洞逃逸>3. runC / 内核漏洞逃逸</a></li><li><a href=#4-kubelet-api-未授权>4. Kubelet API 未授权</a></li><li><a href=#5-etcd-泄露>5. etcd 泄露</a></li><li><a href=#6-kubeconfig--云凭证泄露>6. kubeconfig / 云凭证泄露</a></li></ol></li><li><a href=#四检测与审计步骤>四、检测与审计步骤</a></li><li><a href=#五防御与修复>五、防御与修复</a></li><li><a href=#六小结>六、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088103/>Docker 与 Kubernetes 云安全实战</a></h2><h3 class=article-subtitle>容器与 K8s 安全：docker.sock 未授权、特权容器逃逸、runC 漏洞、Kubelet API 未授权、etcd 泄露、RBAC 与镜像安全。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
-<time class=article-time--published datetime=2026-08-30T01:10:00+08:00>Aug 30, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>云安全测试只用于授权环境。对非授权集群做逃逸/提权可能触犯法律并造成业务中断。</p><h2 id=一原理容器不等于隔离>一、原理：容器不等于隔离</h2><p>容器共享宿主机内核，隔离比虚拟机弱。“容器内 = 安全”是错误认知。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+<span>暗色模式</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#写在前面合法学习边界>写在前面：合法学习边界</a></li><li><a href=#一什么是等保20>一、什么是等保2.0</a></li><li><a href=#二五个等级对照图>二、五个等级对照图</a></li><li><a href=#三各行业常见等级要求>三、各行业常见等级要求</a></li><li><a href=#四等保合规流程>四、等保合规流程</a></li><li><a href=#五第三级安全要求常见>五、第三级安全要求（常见）</a></li><li><a href=#六小结>六、小结</a></li></ol></nav></div></section></aside><main class="main full-width"><article class=main-article><header class=article-header><div class=article-details><header class=article-category><a href=/categories/%E5%AE%89%E5%85%A8%E6%9C%8D%E5%8A%A1/ style=background-color:#2a9d8f;color:#fff>安全服务</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/751088103/>等级保护等保2.0基础（五个等级与合规要点）</a></h2><h3 class=article-subtitle>等保2.0五个等级详解：自主保护、指导保护、监督保护、强制保护、专控保护，含各行业等级要求、测评流程和合规要点，附等级图。</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published datetime=2026-08-29T14:00:00+08:00>Aug 29, 2026</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 1 分钟</time></div></footer></div></header><section class=article-content><h2 id=写在前面合法学习边界>写在前面：合法学习边界</h2><p>等保2.0 是国家网络安全法强制要求的安全合规制度。本文讲合规方法和流程。</p><h2 id=一什么是等保20>一、什么是等保2.0</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>全称：信息安全等级保护 2.0
+</span></span><span class=line><span class=cl>法律依据：《网络安全法》第 21 条
+</span></span><span class=line><span class=cl>生效时间：2019 年 5 月 1 日
+</span></span><span class=line><span class=cl>核心原则：定级→备案→建设→测评→监督
+</span></span></code></pre></td></tr></table></div></div><h2 id=二五个等级对照图>二、五个等级对照图</h2><img src=/img/mlps-levels.svg alt=等保2.0五个等级对照图><h2 id=三各行业常见等级要求>三、各行业常见等级要求</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第一级（自主保护）：
+</span></span><span class=line><span class=cl>  一般企业内网、个人网站
+</span></span><span class=line><span class=cl>  无强制要求，自主保护
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第二级（指导保护）：
+</span></span><span class=line><span class=cl>  一般中小企业网站
+</span></span><span class=line><span class=cl>  自评备案，无需正式测评
+</span></span><span class=line><span class=cl>  备案后 30 天内完成
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第三级（监督保护）：
+</span></span><span class=line><span class=cl>  金融/政务/医疗/教育/电商（涉及公民个人信息的）
+</span></span><span class=line><span class=cl>  必须每年测评 + 备案
+</span></span><span class=line><span class=cl>  测评周期：每 12 个月一次
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第四级（强制保护）：
+</span></span><span class=line><span class=cl>  电力/电信/航空/国防
+</span></span><span class=line><span class=cl>  每 6 个月测评
+</span></span><span class=line><span class=cl>  国家专项审查
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第五级（专控保护）：
+</span></span><span class=line><span class=cl>  国家核心基础设施
+</span></span><span class=line><span class=cl>  极少使用，国家专项管控
+</span></span></code></pre></td></tr></table></div></div><h2 id=四等保合规流程>四、等保合规流程</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：定级
+</span></span><span class=line><span class=cl>  编写定级报告（确定保护等级）
+</span></span><span class=line><span class=cl>  专家评审（第三级以上需专家评审）
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 2 步：备案
+</span></span><span class=line><span class=cl>  提交到当地公安局网安部门
+</span></span><span class=line><span class=cl>  第三级以上需省级部门备案
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 3 步：建设整改
+</span></span><span class=line><span class=cl>  按照等保要求建设/整改
+</span></span><span class=line><span class=cl>  安全管理制度
+</span></span><span class=line><span class=cl>  安全技术措施
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 4 步：等级测评
+</span></span><span class=line><span class=cl>  选择有资质的测评机构
+</span></span><span class=line><span class=cl>  测评周期：第三级每年一次
+</span></span><span class=line><span class=cl>  输出测评报告
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>第 5 步：监督检查
+</span></span><span class=line><span class=cl>  公安机关定期抽查
+</span></span><span class=line><span class=cl>  不合规需限期整改
+</span></span></code></pre></td></tr></table></div></div><h2 id=五第三级安全要求常见>五、第三级安全要求（常见）</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
 </span><span class=lnt>2
 </span><span class=lnt>3
 </span><span class=lnt>4
 </span><span class=lnt>5
 </span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>主要风险面：
-</span></span><span class=line><span class=cl>1. 镜像漏洞（依赖过旧）
-</span></span><span class=line><span class=cl>2. 配置错误（特权容器、宿主机目录挂载）
-</span></span><span class=line><span class=cl>3. 容器逃逸（漏洞突破隔离拿宿主）
-</span></span><span class=line><span class=cl>4. K8s 组件未授权（API Server / etcd / kubelet）
-</span></span><span class=line><span class=cl>5. 权限过大（RBAC 配置不当）
-</span></span></code></pre></td></tr></table></div></div><h2 id=二影响与危害>二、影响与危害</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>拿到容器 → 逃逸到宿主机
-</span></span><span class=line><span class=cl>宿主机 → 横向到整个集群
-</span></span><span class=line><span class=cl>etcd/API 泄露 → 集群被接管
-</span></span><span class=line><span class=cl>云凭证/命名空间数据泄露
-</span></span></code></pre></td></tr></table></div></div><p>风险等级：高到严重。</p><h2 id=三常见利用与验证>三、常见利用与验证</h2><h3 id=1-dockersock-未授权>1. docker.sock 未授权</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>容器内挂载了 /var/run/docker.sock → 可操控宿主机 Docker
-</span></span><span class=line><span class=cl>验证：ls /var/run/docker.sock
-</span></span><span class=line><span class=cl>利用：创建特权容器挂载宿主机根目录 → chroot 提权
-</span></span></code></pre></td></tr></table></div></div><h3 id=2-特权容器逃逸>2. 特权容器逃逸</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>特权容器可访问宿主机设备与资源
-</span></span><span class=line><span class=cl>验证：cat /proc/self/status | grep CapEff（看 CAP_SYS_ADMIN）
-</span></span><span class=line><span class=cl>利用：mount 宿主机盘、nsenter 逃逸
-</span></span></code></pre></td></tr></table></div></div><h3 id=3-runc--内核漏洞逃逸>3. runC / 内核漏洞逃逸</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>runC 历史漏洞（CVE-2019-5736 等）可逃逸到宿主机
-</span></span><span class=line><span class=cl>内核漏洞（如 Dirty Pipe）在容器内也能利用
-</span></span></code></pre></td></tr></table></div></div><h3 id=4-kubelet-api-未授权>4. Kubelet API 未授权</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl -k https://&lt;节点IP&gt;:10250/pods
-</span></span><span class=line><span class=cl>curl -k https://&lt;节点IP&gt;:10250/run/命名空间/容器/命令
-</span></span><span class=line><span class=cl><span class=c1># 解释：10250 未鉴权时可直接执行容器命令</span>
-</span></span></code></pre></td></tr></table></div></div><h3 id=5-etcd-泄露>5. etcd 泄露</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>etcd 存集群全部密钥与配置
-</span></span><span class=line><span class=cl>2379 端口未鉴权 → 直接 dump
-</span></span></code></pre></td></tr></table></div></div><h3 id=6-kubeconfig--云凭证泄露>6. kubeconfig / 云凭证泄露</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>泄露的 kubeconfig 可管理集群
-</span></span><span class=line><span class=cl>云凭证（AK/SK）可接管云资源
-</span></span></code></pre></td></tr></table></div></div><h2 id=四检测与审计步骤>四、检测与审计步骤</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>第 1 步：端口扫描 2379/10250/6443/10255
-</span></span><span class=line><span class=cl>第 2 步：探测 Kubelet/API 是否未鉴权
-</span></span><span class=line><span class=cl>第 3 步：检查容器是否特权/挂载宿主机目录
-</span></span><span class=line><span class=cl>第 4 步：镜像漏洞扫描（Trivy/Clair）
-</span></span><span class=line><span class=cl>第 5 步：审查 RBAC 与命名空间权限
-</span></span></code></pre></td></tr></table></div></div><h2 id=五防御与修复>五、防御与修复</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
-</span><span class=lnt>2
-</span><span class=lnt>3
-</span><span class=lnt>4
-</span><span class=lnt>5
-</span><span class=lnt>6
-</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>禁止挂载 docker.sock；不用特权容器
-</span></span><span class=line><span class=cl>镜像扫描 + 及时更新依赖
-</span></span><span class=line><span class=cl>API Server/Kubelet/etcd 开启鉴权与 TLS
-</span></span><span class=line><span class=cl>RBAC 最小权限，禁止 cluster-admin 滥用
-</span></span><span class=line><span class=cl>网络策略隔离命名空间
-</span></span><span class=line><span class=cl>运行时安全（gVisor/Falco 行为监控）
-</span></span></code></pre></td></tr></table></div></div><h2 id=六小结>六、小结</h2><p>云安全的核心是“<strong>容器不是隔离边界，配置决定安全</strong>”。渗透时先试 docker.sock 与 K8s 未授权端点（10250/2379）；防守时禁用特权、收紧 RBAC、加镜像扫描和运行时监控。容器逃逸 + K8s 未授权，是云上渗透的两条主线。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/docker/>Docker</a>
-<a href=/tags/kubernetes/>Kubernetes</a>
-<a href=/tags/%E4%BA%91%E5%AE%89%E5%85%A8/>云安全</a>
-<a href=/tags/%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/>容器逃逸</a>
-<a href=/tags/%E5%AE%89%E5%85%A8%E8%BF%90%E7%BB%B4/>安全运维</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
-<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088112/><div class=article-details><h2 class=article-title>护网 / 重保经验总结</h2></div></a></article><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>应急响应处置与事件溯源实战</h2></div></a></article><article><a href=/p/751088089/><div class=article-details><h2 class=article-title>态势感知专项：平台功能与厂商对比</h2></div></a></article><article><a href=/p/751088087/><div class=article-details><h2 class=article-title>IPS / IDS 专项：入侵检测与防御</h2></div></a></article><article><a href=/p/751088088/><div class=article-details><h2 class=article-title>防火墙专项：传统与下一代防火墙（NGFW）</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>安全物理环境：机房访问控制、监控
+</span></span><span class=line><span class=cl>安全通信网络：传输加密、网络隔离
+</span></span><span class=line><span class=cl>安全区域边界：防火墙、入侵检测、审计
+</span></span><span class=line><span class=cl>安全计算环境：身份鉴别、访问控制、数据完整性
+</span></span><span class=line><span class=cl>安全管理中心：集中管控、审计
+</span></span><span class=line><span class=cl>安全管理制度：制度、人员、建设、运维
+</span></span></code></pre></td></tr></table></div></div><h2 id=六小结>六、小结</h2><p>绝大多数企业网站和系统是<strong>第二级或第三级</strong>。金融/政务系统通常要求第三级。等保合规不是"考完就完"，而是持续的过程：每年测评、持续监控、持续改进。</p></section><footer class=article-footer><section class=article-tags><a href=/tags/%E7%AD%89%E4%BF%9D/>等保</a>
+<a href=/tags/%E7%AD%89%E7%BA%A7%E4%BF%9D%E6%8A%A4/>等级保护</a>
+<a href=/tags/%E5%90%88%E8%A7%84/>合规</a>
+<a href=/tags/%E5%AE%89%E5%85%A8%E6%B5%8B%E8%AF%84/>安全测评</a>
+<a href=/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>本站使用「署名 4.0 国际」创作共享协议，可自由转载、引用，但需署名作者且注明文章出处</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>最后更新于 Aug 30, 2026 10:00 +0800</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article><a href=/p/751088088/><div class=article-details><h2 class=article-title>防火墙专项：传统与下一代防火墙（NGFW）</h2></div></a></article><article><a href=/p/751088104/><div class=article-details><h2 class=article-title>渗透思路：登录窗口（认证绕过全路径）</h2></div></a></article><article><a href=/p/751088100/><div class=article-details><h2 class=article-title>渗透思路：上传按钮（绕过全路径）</h2></div></a></article><article><a href=/p/751088099/><div class=article-details><h2 class=article-title>渗透思路：输入框 / 搜索框（全漏洞类型测试清单）</h2></div></a></article><article><a href=/p/751088092/><div class=article-details><h2 class=article-title>应急响应处置与事件溯源实战</h2></div></a></article></div></div></aside><script src=https://giscus.app/client.js data-repo=SoulJian03/souljian-blog data-repo-id=R_kgDOOckFZw data-category=Genera data-category-id=DIC_kwDOOckFZ84CpSF1 data-mapping=title data-strict=0 data-reactions-enabled=1 data-emit-metadata=0 data-input-position=top data-theme=light data-lang=en data-loading crossorigin=anonymous async></script><script>function setGiscusTheme(e){let t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:{setConfig:{theme:e}}},"https://giscus.app")}(function(){addEventListener("message",t=>{if(event.origin!=="https://giscus.app")return;e()}),window.addEventListener("onColorSchemeChange",e);function e(){setGiscusTheme(document.documentElement.dataset.scheme==="light"?"light":"gruvbox")}})()</script><footer class=site-footer><div class=footer-container><div class=footer-left><div class=copyright>&copy;
 2020 -
 2026 SoulJian小站</div><div class=busuanzi-count><script async src=//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js></script><span class=site-uv title=访客数><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="visitor-icon"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 <span id=busuanzi_value_site_uv></span>
